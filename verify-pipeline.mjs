@@ -15,9 +15,10 @@
  */
 
 import { readFileSync, readdirSync, existsSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const CAREER_OPS = new URL('.', import.meta.url).pathname;
+const CAREER_OPS = fileURLToPath(new URL('.', import.meta.url));
 // Support both layouts: data/applications.md (boilerplate) and applications.md (original)
 const APPS_FILE = existsSync(join(CAREER_OPS, 'data/applications.md'))
   ? join(CAREER_OPS, 'data/applications.md')
@@ -28,16 +29,25 @@ const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.yml'))
   ? join(CAREER_OPS, 'templates/states.yml')
   : join(CAREER_OPS, 'states.yml');
 
+// Canonical statuses (both English labels from states.yml and legacy Spanish IDs)
 const CANONICAL_STATUSES = [
+  // English (states.yml labels — current)
+  'evaluated', 'applied', 'responded', 'interview',
+  'offer', 'rejected', 'discarded', 'skip',
+  // Spanish (legacy)
   'evaluada', 'aplicado', 'respondido', 'entrevista',
   'oferta', 'rechazado', 'descartado', 'no aplicar',
 ];
 
 const ALIASES = {
-  'enviada': 'aplicado', 'aplicada': 'aplicado', 'applied': 'aplicado', 'sent': 'aplicado',
+  // English aliases
+  'sent': 'applied', 'submitted': 'applied',
+  'closed': 'discarded', 'cancelled': 'discarded', 'canceled': 'discarded',
+  // Spanish (legacy)
+  'enviada': 'aplicado', 'aplicada': 'aplicado',
   'cerrada': 'descartado', 'descartada': 'descartado', 'cancelada': 'descartado',
   'rechazada': 'rechazado',
-  'no_aplicar': 'no aplicar', 'skip': 'no aplicar', 'monitor': 'no aplicar',
+  'no_aplicar': 'no aplicar', 'monitor': 'no aplicar',
 };
 
 let errors = 0;
@@ -116,11 +126,13 @@ for (const [key, group] of companyRoleMap) {
 if (dupes === 0) ok('No exact duplicates found');
 
 // --- Check 3: Report links ---
+// Report links are relative to applications.md location, not CAREER_OPS root.
 let brokenReports = 0;
+const appsDir = dirname(APPS_FILE);
 for (const e of entries) {
   const match = e.report.match(/\]\(([^)]+)\)/);
   if (!match) continue;
-  const reportPath = join(CAREER_OPS, match[1]);
+  const reportPath = join(appsDir, match[1]);
   if (!existsSync(reportPath)) {
     error(`#${e.num}: Report not found: ${match[1]}`);
     brokenReports++;

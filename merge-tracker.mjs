@@ -16,8 +16,9 @@
 
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, renameSync, existsSync } from 'fs';
 import { join, basename } from 'path';
+import { fileURLToPath } from 'url';
 
-const CAREER_OPS = new URL('.', import.meta.url).pathname;
+const CAREER_OPS = fileURLToPath(new URL('.', import.meta.url));
 // Support both layouts: data/applications.md (boilerplate) and applications.md (original)
 const APPS_FILE = existsSync(join(CAREER_OPS, 'data/applications.md'))
   ? join(CAREER_OPS, 'data/applications.md')
@@ -27,8 +28,8 @@ const MERGED_DIR = join(ADDITIONS_DIR, 'merged');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERIFY = process.argv.includes('--verify');
 
-// Canonical states and aliases
-const CANONICAL_STATES = ['Evaluada', 'Aplicado', 'Respondido', 'Entrevista', 'Oferta', 'Rechazado', 'Descartado', 'NO APLICAR'];
+// Canonical states (English from states.yml, legacy Spanish also accepted)
+const CANONICAL_STATES = ['Evaluated', 'Applied', 'Responded', 'Interview', 'Offer', 'Rejected', 'Discarded', 'SKIP'];
 
 function validateStatus(status) {
   const clean = status.replace(/\*\*/g, '').replace(/\s+\d{4}-\d{2}-\d{2}.*$/, '').trim();
@@ -38,23 +39,31 @@ function validateStatus(status) {
     if (valid.toLowerCase() === lower) return valid;
   }
 
-  // Aliases
+  // Aliases (English + legacy Spanish → canonical English)
   const aliases = {
-    'enviada': 'Aplicado', 'aplicada': 'Aplicado', 'applied': 'Aplicado', 'sent': 'Aplicado',
-    'cerrada': 'Descartado', 'descartada': 'Descartado', 'cancelada': 'Descartado',
-    'rechazada': 'Rechazado',
-    'no aplicar': 'NO APLICAR', 'no_aplicar': 'NO APLICAR', 'skip': 'NO APLICAR', 'monitor': 'NO APLICAR',
-    'condicional': 'Evaluada', 'hold': 'Evaluada', 'evaluar': 'Evaluada', 'verificar': 'Evaluada',
-    'geo blocker': 'NO APLICAR',
+    // Spanish → English
+    'evaluada': 'Evaluated', 'aplicado': 'Applied', 'aplicada': 'Applied', 'enviada': 'Applied',
+    'respondido': 'Responded', 'entrevista': 'Interview', 'oferta': 'Offer',
+    'rechazado': 'Rejected', 'rechazada': 'Rejected',
+    'descartado': 'Discarded', 'descartada': 'Discarded', 'cerrada': 'Discarded', 'cancelada': 'Discarded',
+    'no aplicar': 'SKIP', 'no_aplicar': 'SKIP',
+    // English aliases
+    'sent': 'Applied', 'submitted': 'Applied',
+    'closed': 'Discarded', 'cancelled': 'Discarded', 'canceled': 'Discarded',
+    'monitor': 'SKIP',
+    // Soft states
+    'condicional': 'Evaluated', 'hold': 'Evaluated', 'evaluar': 'Evaluated', 'verificar': 'Evaluated',
+    'ready to apply': 'Evaluated', 'ready': 'Evaluated',
+    'geo blocker': 'SKIP',
   };
 
   if (aliases[lower]) return aliases[lower];
 
-  // DUPLICADO/Repost → Descartado
-  if (/^(duplicado|dup|repost)/i.test(lower)) return 'Descartado';
+  // DUPLICADO/Repost → Discarded
+  if (/^(duplicado|dup|repost)/i.test(lower)) return 'Discarded';
 
-  console.warn(`⚠️  Non-canonical status "${status}" → defaulting to "Evaluada"`);
-  return 'Evaluada';
+  console.warn(`⚠️  Non-canonical status "${status}" → defaulting to "Evaluated"`);
+  return 'Evaluated';
 }
 
 function normalizeCompany(name) {

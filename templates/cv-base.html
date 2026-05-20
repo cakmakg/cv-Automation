@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Gökhan Cakmak — Lebenslauf</title>
+<style>
+  @font-face { font-family: 'Space Grotesk'; src: url('../fonts/space-grotesk-latin.woff2') format('woff2'); font-weight: 300 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Space Grotesk'; src: url('../fonts/space-grotesk-latin-ext.woff2') format('woff2'); font-weight: 300 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'DM Sans'; src: url('../fonts/dm-sans-latin.woff2') format('woff2'); font-weight: 100 1000; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'DM Sans'; src: url('../fonts/dm-sans-latin-ext.woff2') format('woff2'); font-weight: 100 1000; font-style: normal; font-display: swap; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: 'DM Sans', sans-serif; font-size: 11px; line-height: 1.42; color: #1a1a2e; background: #fff; }
+  .page { width: 100%; max-width: 210mm; margin: 0 auto; padding: 0; }
+
+  .header { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; margin-bottom: 10px; }
+  .header-left h1 { font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; color: #1a1a2e; }
+  .header-left .tagline { font-family: 'Space Grotesk', sans-serif; font-size: 14.5px; font-weight: 500; color: hsl(270, 70%, 45%); margin-top: 3px; }
+  .header-left .contact-row { display: flex; flex-wrap: wrap; gap: 3px 12px; font-size: 10.5px; color: #555; margin-top: 8px; }
+  .header-left .contact-row a { color: #555; text-decoration: none; white-space: nowrap; }
+  .header-left .contact-row .sep { color: #ccc; }
+
+  .photo-frame { width: 100px; height: 125px; overflow: hidden; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border: 2px solid hsl(187, 50%, 88%); flex-shrink: 0; }
+  .photo-frame img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+
+  .header-gradient { height: 3px; background: linear-gradient(to right, hsl(187, 74%, 32%), hsl(270, 70%, 45%)); border-radius: 2px; margin-bottom: 10px; }
+
+  .section { margin-bottom: 8px; }
+  .section-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(187, 74%, 28%); border-bottom: 1.5px solid hsl(187, 50%, 88%); padding-bottom: 3px; margin-bottom: 6px; }
+  a { white-space: nowrap; }
+
+  .competencies-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+  .competency-tag { font-size: 10.5px; font-weight: 600; color: hsl(187, 74%, 22%); background: hsl(187, 55%, 95%); padding: 3px 10px; border-radius: 4px; border: 1px solid hsl(187, 40%, 82%); }
+
+  .job { margin-bottom: 6px; }
+  .job-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .job-company { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: hsl(270, 70%, 45%); }
+  .job-period { font-size: 10.5px; color: #666; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .job-role { font-size: 11.5px; font-weight: 500; color: #333; margin-bottom: 1px; }
+  .job ul { padding-left: 15px; margin-top: 1px; }
+  .job li { font-size: 10.5px; line-height: 1.4; color: #333; margin-bottom: 1px; }
+  .job li strong { font-weight: 700; color: #1a1a2e; }
+
+  .project { margin-bottom: 5px; }
+  .project-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .project-title { font-family: 'Space Grotesk', sans-serif; font-size: 11.5px; font-weight: 700; color: hsl(270, 70%, 45%); }
+  .project-stack { font-size: 9.5px; color: #888; font-style: italic; }
+  .project-desc { font-size: 10.5px; color: #333; margin-top: 1px; line-height: 1.4; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .item-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; font-size: 10.5px; gap: 8px; }
+  .item-row .left { color: #333; }
+  .item-row .left strong { color: #1a1a2e; font-weight: 700; }
+  .item-row .left em { color: hsl(270, 70%, 45%); font-style: normal; font-weight: 500; }
+  .item-row .right { font-size: 10px; color: #666; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 500; }
+
+  .skill-line { font-size: 10.5px; color: #333; margin-bottom: 2px; line-height: 1.45; }
+  .skill-line strong { font-weight: 700; color: #1a1a2e; }
+
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  .avoid-break { break-inside: avoid; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-left">
+      <h1>Gökhan Cakmak</h1>
+      <div class="tagline">{{TAGLINE}}</div>
+      <div class="contact-row">
+        <span>53121 Bonn, Deutschland</span>
+        <span class="sep">|</span>
+        <span>gokhan.cakmak@web.de</span>
+        <span class="sep">|</span>
+        <span>+49 163 9734475</span>
+      </div>
+      <div class="contact-row">
+        <a href="https://www.linkedin.com/in/gökhan-cakmak/">linkedin.com/in/gökhan-cakmak</a>
+        <span class="sep">|</span>
+        <a href="https://github.com/cakmakg">github.com/cakmakg</a>
+        <span class="sep">|</span>
+        <a href="https://gokhancakmak.vercel.app/">gokhancakmak.vercel.app</a>
+      </div>
+    </div>
+    <div class="photo-frame">
+      <img src="{{PHOTO}}" alt="Gökhan Cakmak">
+    </div>
+  </div>
+  <div class="header-gradient"></div>
+
+  <div class="section">
+    <div class="section-title">Kernkompetenzen</div>
+    <div class="competencies-grid">{{COMPETENCIES}}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Berufserfahrung</div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-company">GIS GmbH — Bonn</span>
+        <span class="job-period">11/2025 – 02/2026</span>
+      </div>
+      <div class="job-role">1st Level IT Support (Praktikum)</div>
+      <ul><li>1st Level IT Support, Personalplanung und Zeiterfassung in strukturiertem Enterprise-Umfeld</li></ul>
+    </div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-company">Vidinli Software — Bonn</span>
+        <span class="job-period">09/2025 – 10/2025</span>
+      </div>
+      <div class="job-role">Frontend Developer (Praktikum)</div>
+      <ul><li>Entwicklung des Frontends einer Shopping-Plattform mit <strong>React.js</strong> und <strong>TypeScript</strong> — Komponentenarchitektur, responsive UI, State-Management</li></ul>
+    </div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-company">EMLAK AG — Köln</span>
+        <span class="job-period">11/2023 – 05/2024</span>
+      </div>
+      <div class="job-role">IT-Praktikum (im Rahmen der Umschulung)</div>
+      <ul><li>Unterstützung in IT-Systemen und Netzwerken — erste praktische Erfahrungen in IT-Infrastruktur</li></ul>
+    </div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-company">Mobile Coffee Bar &amp; Catering — Bonn</span>
+        <span class="job-period">2020 – 2023</span>
+      </div>
+      <div class="job-role">Gründer &amp; Geschäftsführer (Selbstständiger Unternehmer)</div>
+      <ul><li>Gründung und Leitung eines Gastronomie-/Catering-Unternehmens — volle operative Verantwortung: Kundenbetreuung, Finanzen, Logistik, Team</li></ul>
+    </div>
+  </div>
+
+  <div class="section avoid-break">
+    <div class="section-title">Projekte</div>
+    {{PROJECTS}}
+  </div>
+
+  <div class="two-col">
+    <div class="section avoid-break">
+      <div class="section-title">Ausbildung</div>
+      <div class="item-row">
+        <span class="left"><strong>Clarusway</strong> — <em>Full Stack Web Developer (Umschulung)</em></span>
+        <span class="right">07/2024 – 08/2025</span>
+      </div>
+      <div class="item-row">
+        <span class="left"><strong>FAW</strong> — <em>Fachinformatiker AE/SI (Umschulung)</em></span>
+        <span class="right">02/2023 – 01/2024</span>
+      </div>
+      <div class="item-row">
+        <span class="left"><strong>Universität Istanbul</strong> — <em>Spanisch-Türkisch Übersetzung</em></span>
+        <span class="right">2009 – 2012</span>
+      </div>
+    </div>
+
+    <div class="section avoid-break">
+      <div class="section-title">Zertifikate</div>
+      <div class="item-row"><span class="left">Clarusway Full-Stack Developer</span><span class="right">Aug 2025</span></div>
+      <div class="item-row"><span class="left">Clarusway Backend Developer</span><span class="right">Mai 2025</span></div>
+      <div class="item-row"><span class="left">Clarusway Frontend Developer</span><span class="right">Okt 2024</span></div>
+      <div class="item-row"><span class="left">FAW Köln — IT-NETZWERKE</span><span class="right">Okt 2023</span></div>
+      <div class="item-row"><span class="left">FAW Köln — IT-SYSTEME</span><span class="right">Jun 2023</span></div>
+    </div>
+  </div>
+
+  <div class="section avoid-break">
+    <div class="section-title">Skills &amp; Sprachen</div>
+    {{SKILLS}}
+    <div class="skill-line"><strong>Sprachen:</strong> Deutsch (fließend) · Englisch (gut) · Spanisch (gut) · Türkisch (Muttersprache)</div>
+  </div>
+
+</div>
+</body>
+</html>
