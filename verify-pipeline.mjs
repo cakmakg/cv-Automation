@@ -14,11 +14,11 @@
  * Run: node career-ops/verify-pipeline.mjs
  */
 
-import { readFileSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, readdirSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-const CAREER_OPS = fileURLToPath(new URL('.', import.meta.url));
+const CAREER_OPS = dirname(fileURLToPath(import.meta.url));
 // Support both layouts: data/applications.md (boilerplate) and applications.md (original)
 const APPS_FILE = existsSync(join(CAREER_OPS, 'data/applications.md'))
   ? join(CAREER_OPS, 'data/applications.md')
@@ -29,25 +29,24 @@ const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.yml'))
   ? join(CAREER_OPS, 'templates/states.yml')
   : join(CAREER_OPS, 'states.yml');
 
-// Canonical statuses (both English labels from states.yml and legacy Spanish IDs)
+// Ensure required directories exist (fresh setup)
+mkdirSync(join(CAREER_OPS, 'data'), { recursive: true });
+mkdirSync(REPORTS_DIR, { recursive: true });
+
 const CANONICAL_STATUSES = [
-  // English (states.yml labels — current)
   'evaluated', 'applied', 'responded', 'interview',
   'offer', 'rejected', 'discarded', 'skip',
-  // Spanish (legacy)
-  'evaluada', 'aplicado', 'respondido', 'entrevista',
-  'oferta', 'rechazado', 'descartado', 'no aplicar',
 ];
 
 const ALIASES = {
-  // English aliases
-  'sent': 'applied', 'submitted': 'applied',
-  'closed': 'discarded', 'cancelled': 'discarded', 'canceled': 'discarded',
-  // Spanish (legacy)
-  'enviada': 'aplicado', 'aplicada': 'aplicado',
-  'cerrada': 'descartado', 'descartada': 'descartado', 'cancelada': 'descartado',
-  'rechazada': 'rechazado',
-  'no_aplicar': 'no aplicar', 'monitor': 'no aplicar',
+  'evaluada': 'evaluated', 'condicional': 'evaluated', 'hold': 'evaluated', 'evaluar': 'evaluated', 'verificar': 'evaluated',
+  'aplicado': 'applied', 'enviada': 'applied', 'aplicada': 'applied', 'applied': 'applied', 'sent': 'applied',
+  'respondido': 'responded',
+  'entrevista': 'interview',
+  'oferta': 'offer',
+  'rechazado': 'rejected', 'rechazada': 'rejected',
+  'descartado': 'discarded', 'descartada': 'discarded', 'cerrada': 'discarded', 'cancelada': 'discarded',
+  'no aplicar': 'skip', 'no_aplicar': 'skip', 'monitor': 'skip', 'geo blocker': 'skip',
 };
 
 let errors = 0;
@@ -126,7 +125,7 @@ for (const [key, group] of companyRoleMap) {
 if (dupes === 0) ok('No exact duplicates found');
 
 // --- Check 3: Report links ---
-// Report links are relative to applications.md location, not CAREER_OPS root.
+// Report links are relative to applications.md location, not CAREER_OPS root
 let brokenReports = 0;
 const appsDir = dirname(APPS_FILE);
 for (const e of entries) {
