@@ -37,7 +37,9 @@ if (!existsSync(configPath)) {
 
 // --- load config ---
 const config = (await import(pathToFileURL(configPath).href)).default;
-const { slug, date, recipient, subject, cv, anschreiben } = config;
+const { slug, date, recipient, subject, cv, anschreiben, language = 'de' } = config;
+const cvTemplateFile = language === 'en' ? 'templates/cv-base-en.html' : 'templates/cv-base.html';
+const asTemplateFile = language === 'en' ? 'templates/anschreiben-base-en.html' : 'templates/anschreiben-base.html';
 
 // Derive ISO date for filenames from German DD.MM.YYYY
 const isoDate = (() => {
@@ -56,7 +58,7 @@ if (!existsSync(photoPath)) {
 const photoDataURI = `data:image/jpeg;base64,${readFileSync(photoPath).toString('base64')}`;
 
 // --- render CV HTML ---
-const cvTemplate = readFileSync(resolve(CAREER_OPS, 'templates/cv-base.html'), 'utf-8');
+const cvTemplate = readFileSync(resolve(CAREER_OPS, cvTemplateFile), 'utf-8');
 
 const competenciesHtml = cv.competencies
   .map((c) => `<span class="competency-tag">${c}</span>`)
@@ -93,7 +95,7 @@ writeFileSync(cvHtmlPath, cvHtmlFixed);
 console.log(`  ✓ CV HTML rendered: output/cv-${slug}.html`);
 
 // --- render Anschreiben HTML ---
-const asTemplate = readFileSync(resolve(CAREER_OPS, 'templates/anschreiben-base.html'), 'utf-8');
+const asTemplate = readFileSync(resolve(CAREER_OPS, asTemplateFile), 'utf-8');
 
 const recipientHtml = recipient.map((line, i) =>
   i === 0 ? `<strong>${line}</strong>` : line
@@ -103,10 +105,14 @@ const paragraphsHtml = anschreiben.paragraphs
   .map((p) => `<p>${p}</p>`)
   .join('\n    ');
 
+const defaultAnrede = language === 'en' ? 'Dear Hiring Team,' : 'Sehr geehrte Damen und Herren,';
+const anredeText = anschreiben.anrede || defaultAnrede;
+
 const asHtml = asTemplate
   .replace('{{RECIPIENT}}', recipientHtml)
   .replace('{{DATE}}', date)
   .replace('{{SUBJECT}}', subject)
+  .replace('{{ANREDE}}', anredeText)
   .replace('{{PARAGRAPHS}}', paragraphsHtml);
 
 const asHtmlFixed = asHtml.replace(/url\(['"]?\.\.\/fonts\//g, "url('./fonts/");
