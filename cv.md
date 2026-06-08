@@ -59,26 +59,36 @@ Full-Stack Developer and AI Systems Builder with a focus on multi-agent orchestr
 ## Projects
 
 ### AI Orchestra — Multi-Agent B2B Automation System
-- Designed and built a LangGraph-based multi-agent orchestration system for B2B process automation
-- Integrated MongoDB Vector Search for semantic retrieval (RAG architecture)
-- Built n8n as the digital nervous system connecting agents to external APIs and services
-- Implemented strict Human-in-the-Loop (HITL) checkpoints to prevent hallucinations
-- Agents cover: Gmail, Twitter, Instagram, TikTok workflow automation
+- LangGraph-based multi-agent orchestration system for B2B process automation
+- MongoDB Vector Search as the semantic retrieval layer (RAG architecture)
+- n8n as the digital nervous system connecting agents to external APIs (Gmail, Twitter, Instagram, TikTok)
+- Strict Human-in-the-Loop checkpoints and Critic-Agents prevent hallucinations
+- Multi-LLM orchestration: Claude · Gemini · OpenAI
 
-### KI-System für Cyber-Security-Logs (in development)
-- Building an AI system for automated analysis and classification of security logs
-- Zero-tolerance architecture: precision and reliability as core requirements
-- Event-driven workflow with automated alerting
+### Autonomous SecOps Agent — AI-Powered Cyber Security Command Center
+- LangGraph pipeline: ThreatAnalyzer → InputGuardrail → HITLGate → AutoMitigator / Strategist → IncidentWriter → QACritic
+- AWS SageMaker RCF (Random Cut Forest) for anomaly scoring on security logs
+- AWS WAF auto-mitigation (IP blocking) with Human-in-the-Loop approval (15-min timeout)
+- MCP server (stdio) for SageMaker / WAF / CloudTrail tools
+- Threat enrichment via VirusTotal, AbuseIPDB, Shodan
+- Multi-tenant with RBAC (super_admin / admin / analyst), AES-256-GCM tenant secrets
+- Real-time layer: WebSocket + SSE, React Flow agent graph (Next.js 14)
 
-### VSpots — Influencer Research Automation
-- Automated influencer research pipeline using n8n workflow automation
-- Integrated Modash API for discovery and analytics, Groq LLM for evaluation and scoring
-- End-to-end pipeline: data collection → AI analysis → report generation
+### werbung-otomation — Multi-Tenant AI Advertising Pipeline
+- Multi-tenant architecture (1 tenant = 1 config folder, B2B SaaS-ready)
+- Pipeline of 8 Anthropic Managed Agents (Classifier, Scraper, Analyzer, Ad Copy, Compliance, Creative, Orchestrator)
+- Image and video generation via fal.ai (Nano Banana 2, Veo 3, Kling v3)
+- Smart Mode: classifier agent + sanity checks + retry logic + Opus escalation on failure
+- YAML policy engine with tenant overrides; FastAPI + React control panel
+- Active sectors: real estate Germany, tourism
 
-### Full-Stack SaaS — Stock Management Platform
-- Built full-stack SaaS application with Node.js, React.js, and MongoDB
-- Focus on scalable backend architecture, clean API design, and good UX
-- Implemented authentication, inventory logic, and dashboard analytics
+### Otonom-Travelagency — Fully Autonomous AI Travel Agency
+- LangGraph 8-node pipeline with Human-in-the-Loop approval gate for critical bookings
+- Real API integrations: Amadeus (flights), Hotelbeds (hotels), Stripe (payment), Twilio (WhatsApp)
+- ChromaDB RAG for destination data (Turkey, Spain, Greece, Cyprus)
+- GDPR-compliant PII masking (email, IBAN, credit card, passport) before LLM calls
+- AES-256-GCM encryption for sensitive tenant credentials (Amadeus / Hotelbeds / Stripe / Twilio)
+- Monorepo: TypeScript Node.js gateway + Python FastAPI agent service + Next.js frontend
 
 ---
 
@@ -107,13 +117,17 @@ Istanbul | 2009 – 2012
 
 ## Skills
 
-- **AI & LLMs:** LangGraph, Multi-Agent Systems (10+), RAG Architecture, Claude API, Gemini, Groq, HITL Workflows, Vector Databases, QA-Loops, Critic-Agents, Event-Driven AI, Model Context Protocol (MCP)
+- **AI & Agentic Systems:** LangGraph, Multi-Agent Systems (10+), Anthropic Managed Agents, RAG, HITL Workflows, Critic-Agents, Event-Driven AI, Model Context Protocol (MCP)
+- **LLM APIs:** Claude / Anthropic, Gemini, OpenAI (GPT)
+- **Cloud & ML:** AWS Bedrock, AWS SageMaker (RCF Anomaly Scoring), AWS WAF, fal.ai (Nano Banana 2, Veo 3, Kling v3)
 - **Automation:** n8n Workflow Automation, Webhook Design, API Orchestration, Pipeline Design
-- **Backend:** Node.js, Express.js, Next.js, AWS Bedrock, Stripe API, Event-Driven Architecture
-- **Frontend:** React.js, TypeScript, JavaScript (ES6+), Redux, TailwindCSS, SASS, Material-UI
-- **Databases:** MongoDB, Firebase, SQL, MongoDB Vector Search
-- **DevOps:** Docker, CI/CD, Linux, Git/GitHub
-- **Methodology:** Agile/Scrum, Jira
+- **Backend:** Node.js, Express.js, Next.js, FastAPI (Python 3.11+), TypeScript, Event-Driven Architecture, Stripe API
+- **Frontend:** React.js, Next.js 14, TypeScript, Redux, Zustand, React Flow, TailwindCSS, SASS, Material-UI
+- **Databases:** MongoDB, MongoDB Vector Search, ChromaDB (Vector RAG), SQL, Firebase
+- **API Integrations:** Amadeus, Hotelbeds, Stripe, Twilio, VirusTotal, AbuseIPDB, Shodan, Modash
+- **Security & Compliance:** AES-256-GCM encryption, GDPR PII masking, Multi-tenant RBAC, Audit logging
+- **DevOps & Tools:** Docker, CI/CD, Linux, Git/GitHub, Playwright, npm/pnpm
+- **Methodology:** Agile/Scrum, Jira, Stakeholder communication, Business-IT translation
 
 ---
 

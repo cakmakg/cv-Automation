@@ -32,6 +32,7 @@
 
   .closing { font-size: 13px; margin-top: 12px; }
   .signature { font-family: 'Space Grotesk', sans-serif; font-size: 15px; color: #1a1a2e; margin-top: 20px; }
+  .signature-img { display: block; width: {{SIGNATURE_WIDTH}}; height: auto; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -59,11 +60,11 @@
   <div class="body">
     <p class="anrede">{{ANREDE}}</p>
     {{PARAGRAPHS}}
-    <p class="closing">I would welcome the opportunity to discuss how I can contribute to your team.</p>
     <p>Best regards,</p>
   </div>
 
   <div class="signature">Gökhan Cakmak</div>
+  <img class="signature-img" src="{{SIGNATURE}}" alt="Signature">
 
 </div>
 </body>

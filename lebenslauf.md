@@ -64,7 +64,7 @@ Full-Stack Developer und AI Systems Builder mit Schwerpunkt auf Multi-Agent-Orch
 - MongoDB Vector Search als semantischer Retrieval-Layer (RAG-Architektur)
 - n8n als digitales Nervensystem zur Anbindung externer APIs (Gmail, Twitter, Instagram, TikTok)
 - Strikte Human-in-the-Loop-Checkpoints und Critic-Agents gegen Halluzinationen
-- Multi-LLM-Orchestrierung: Claude · Gemini · Groq
+- Multi-LLM-Orchestrierung: Claude · Gemini · OpenAI
 
 ### Autonomous SecOps Agent — KI-Cyber-Security-Command-Center
 - LangGraph-Pipeline: ThreatAnalyzer → InputGuardrail → HITLGate → AutoMitigator / Strategist → IncidentWriter → QACritic
@@ -119,7 +119,7 @@ Istanbul | 2009 – 2012
 ## Fähigkeiten
 
 - **AI & Agentic Systems:** LangGraph, Multi-Agent-Systeme (10+), Anthropic Managed Agents, RAG, HITL-Workflows, Critic-Agents, Event-Driven AI, Model Context Protocol (MCP)
-- **LLM-APIs:** Claude / Anthropic, Gemini, Groq, ChatGPT
+- **LLM-APIs:** Claude / Anthropic, Gemini, OpenAI (GPT)
 - **Cloud & ML:** AWS Bedrock, AWS SageMaker (RCF Anomalie-Scoring), AWS WAF, fal.ai (Nano Banana 2, Veo 3, Kling v3)
 - **Automatisierung:** n8n Workflow Automation, Webhook-Design, API-Orchestrierung, Pipeline-Design
 - **Backend:** Node.js, Express.js, Next.js, FastAPI (Python 3.11+), TypeScript, Event-Driven Architecture, Stripe API

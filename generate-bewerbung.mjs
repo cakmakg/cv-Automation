@@ -37,7 +37,7 @@ if (!existsSync(configPath)) {
 
 // --- load config ---
 const config = (await import(pathToFileURL(configPath).href)).default;
-const { slug, date, recipient, subject, cv, anschreiben, language = 'de' } = config;
+const { slug, date, recipient, subject, cv, anschreiben, language = 'de', signatureWidth = '150px' } = config;
 const cvTemplateFile = language === 'en' ? 'templates/cv-base-en.html' : 'templates/cv-base.html';
 const asTemplateFile = language === 'en' ? 'templates/anschreiben-base-en.html' : 'templates/anschreiben-base.html';
 
@@ -56,6 +56,12 @@ if (!existsSync(photoPath)) {
   process.exit(1);
 }
 const photoDataURI = `data:image/jpeg;base64,${readFileSync(photoPath).toString('base64')}`;
+
+// --- load signature as base64 (used in Anschreiben above the name) ---
+const signaturePath = resolve(CAREER_OPS, 'data/image2.png');
+const signatureDataURI = existsSync(signaturePath)
+  ? `data:image/png;base64,${readFileSync(signaturePath).toString('base64')}`
+  : '';
 
 // --- render CV HTML ---
 const cvTemplate = readFileSync(resolve(CAREER_OPS, cvTemplateFile), 'utf-8');
@@ -80,10 +86,34 @@ const skillsHtml = cv.skills
   .map((s) => `<div class="skill-line"><strong>${s.category}:</strong> ${s.items}</div>`)
   .join('\n    ');
 
+// --- Berufserfahrung: configurable via cv.experience, else default (Tech-CV) ---
+const defaultExperience = [
+  { company: 'GIS GmbH — Bonn', period: '11/2025 – 02/2026', role: '1st Level IT Support (Praktikum)',
+    bullets: ['1st Level IT Support, Personalplanung und Zeiterfassung in strukturiertem Enterprise-Umfeld'] },
+  { company: 'Vidinli Software — Bonn', period: '09/2025 – 10/2025', role: 'Frontend Developer (Praktikum)',
+    bullets: ['Entwicklung des Frontends einer Shopping-Plattform mit <strong>React.js</strong> und <strong>TypeScript</strong> — Komponentenarchitektur, responsive UI, State-Management'] },
+  { company: 'EMLAK AG — Köln', period: '11/2023 – 05/2024', role: 'IT-Praktikum (im Rahmen der Umschulung)',
+    bullets: ['Unterstützung in IT-Systemen und Netzwerken — erste praktische Erfahrungen in IT-Infrastruktur'] },
+  { company: 'Mobile Coffee Bar &amp; Catering — Bonn', period: '2020 – 2023', role: 'Gründer &amp; Geschäftsführer (Selbstständiger Unternehmer)',
+    bullets: ['Gründung und Leitung eines Gastronomie-/Catering-Unternehmens — volle operative Verantwortung: Kundenbetreuung, Finanzen, Logistik, Team'] },
+];
+
+const experienceHtml = (cv.experience || defaultExperience)
+  .map((j) => `<div class="job">
+      <div class="job-header">
+        <span class="job-company">${j.company}</span>
+        <span class="job-period">${j.period}</span>
+      </div>
+      <div class="job-role">${j.role}</div>
+      <ul>${j.bullets.map((b) => `<li>${b}</li>`).join('')}</ul>
+    </div>`)
+  .join('\n\n    ');
+
 const cvHtml = cvTemplate
   .replace('{{TAGLINE}}', cv.tagline)
   .replace('{{PHOTO}}', photoDataURI)
   .replace('{{COMPETENCIES}}', competenciesHtml)
+  .replace('{{EXPERIENCE}}', experienceHtml)
   .replace('{{PROJECTS}}', projectsHtml)
   .replace('{{SKILLS}}', skillsHtml);
 
@@ -113,7 +143,9 @@ const asHtml = asTemplate
   .replace('{{DATE}}', date)
   .replace('{{SUBJECT}}', subject)
   .replace('{{ANREDE}}', anredeText)
-  .replace('{{PARAGRAPHS}}', paragraphsHtml);
+  .replace('{{PARAGRAPHS}}', paragraphsHtml)
+  .replace('{{SIGNATURE}}', signatureDataURI)
+  .replace('{{SIGNATURE_WIDTH}}', signatureWidth);
 
 const asHtmlFixed = asHtml.replace(/url\(['"]?\.\.\/fonts\//g, "url('./fonts/");
 

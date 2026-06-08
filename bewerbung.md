@@ -77,15 +77,15 @@ Meine technische Basis bilden Node.js, TypeScript, React/Next.js, FastAPI sowie 
 
 ### AI Engineer
 
-Mein technischer Schwerpunkt umfasst LangGraph für Multi-Agent-Orchestrierung, RAG-Architekturen über MongoDB Vector Search und ChromaDB, Anthropic Managed Agents sowie die Claude-, Gemini- und Groq-APIs. Im Cloud-Bereich arbeite ich mit AWS (Bedrock, SageMaker, WAF). Mir ist wichtig, AI-Systeme so zu bauen, dass sie nicht nur funktionieren, sondern auch erklärbar, prüfbar und produktionstauglich sind — Stichworte: Human-in-the-Loop, Critic-Agents, MCP-Tool-Bindings, GDPR-konforme PII-Maskierung.
+Mein technischer Schwerpunkt umfasst LangGraph für Multi-Agent-Orchestrierung, RAG-Architekturen über MongoDB Vector Search und ChromaDB, Anthropic Managed Agents sowie die Claude-, Gemini- und OpenAI-APIs. Im Cloud-Bereich arbeite ich mit AWS (Bedrock, SageMaker, WAF). Mir ist wichtig, AI-Systeme so zu bauen, dass sie nicht nur funktionieren, sondern auch erklärbar, prüfbar und produktionstauglich sind — Stichworte: Human-in-the-Loop, Critic-Agents, MCP-Tool-Bindings, GDPR-konforme PII-Maskierung.
 
 ### AI Automation Engineer
 
-Technisch arbeite ich mit n8n als Orchestrierungsschicht, kombiniert mit Node.js, Webhooks und APIs für die Anbindung externer Systeme. Ergänzt wird das durch LLM-Integrationen (Claude, Gemini, Groq), RAG-Architekturen und LangGraph-basierte Multi-Agent-Workflows. Themen wie Pipeline-Design, API-Orchestrierung, Monitoring, Queueing-Strukturen und stabile Fehlerbehandlung sind dabei tägliche Praxis.
+Technisch arbeite ich mit n8n als Orchestrierungsschicht, kombiniert mit Node.js, Webhooks und APIs für die Anbindung externer Systeme. Ergänzt wird das durch LLM-Integrationen (Claude, Gemini, OpenAI), RAG-Architekturen und LangGraph-basierte Multi-Agent-Workflows. Themen wie Pipeline-Design, API-Orchestrierung, Monitoring, Queueing-Strukturen und stabile Fehlerbehandlung sind dabei tägliche Praxis.
 
 ### Agentic AI Consultant
 
-Mein technischer Schwerpunkt umfasst LangGraph für Multi-Agent-Orchestrierung, RAG-Architekturen über MongoDB Vector Search und ChromaDB, Anthropic Managed Agents sowie die Claude-, Gemini- und Groq-APIs. Im Cloud-Bereich arbeite ich produktiv mit AWS — Bedrock, SageMaker für RCF-basiertes Anomalie-Scoring und WAF für Auto-Mitigation. Sauberes Error-Handling, Logging, Monitoring und HITL-Checkpoints sind in meinen Systemen Standard, denn gerade in regulierten Kontexten entscheiden diese Themen über Vertrauen und Akzeptanz.
+Mein technischer Schwerpunkt umfasst LangGraph für Multi-Agent-Orchestrierung, RAG-Architekturen über MongoDB Vector Search und ChromaDB, Anthropic Managed Agents sowie die Claude-, Gemini- und OpenAI-APIs. Im Cloud-Bereich arbeite ich produktiv mit AWS — Bedrock, SageMaker für RCF-basiertes Anomalie-Scoring und WAF für Auto-Mitigation. Sauberes Error-Handling, Logging, Monitoring und HITL-Checkpoints sind in meinen Systemen Standard, denn gerade in regulierten Kontexten entscheiden diese Themen über Vertrauen und Akzeptanz.
 
 ---
 
@@ -95,7 +95,7 @@ Quelle of Truth: 4 produktive Projekte (siehe lebenslauf.md). Je nach Rolle: **1
 
 ### Variante A — AI Orchestra (für allgemeine AI / Automation / Fullstack mit AI-Bezug)
 
-Mein Hauptprojekt AI Orchestra ist ein agentisches Multi-Agent-System auf LangGraph-Basis, das mehrere LLM-Anbieter (Claude, Gemini, Groq) orchestriert. Über MongoDB Vector Search greift es als RAG-Layer auf eigene Daten zu; n8n dient als digitales Nervensystem zur Anbindung externer Dienste (Gmail, Twitter, Instagram, TikTok). Um Halluzinationen zu vermeiden, sichere ich die Qualität durch Critic-Agents und strikte Human-in-the-Loop-Checkpoints ab.
+Mein Hauptprojekt AI Orchestra ist ein agentisches Multi-Agent-System auf LangGraph-Basis, das mehrere LLM-Anbieter (Claude, Gemini, OpenAI) orchestriert. Über MongoDB Vector Search greift es als RAG-Layer auf eigene Daten zu; n8n dient als digitales Nervensystem zur Anbindung externer Dienste (Gmail, Twitter, Instagram, TikTok). Um Halluzinationen zu vermeiden, sichere ich die Qualität durch Critic-Agents und strikte Human-in-the-Loop-Checkpoints ab.
 
 ### Variante B — Autonomous SecOps Agent (für Security / KI in regulierten Kontexten / Anomalie-Erkennung)
 
@@ -205,6 +205,8 @@ Bewerbung als [POSITION]
 Sehr geehrter Herr [Nachname], / Sehr geehrte Frau [Nachname],
 ```
 
+**Betreff-Regel:** `Bewerbung als [POSITION]` — [POSITION] ist der SAUBERE Job-Titel. KEINE `(m/w/d)`, keine Portal-/Tech-Tags (`.NET`, `100% Remote`, `Vollzeit`), keine Klammern wie `(Junior)` (ausschreiben). Siehe [[feedback-anschreiben-subject-clean]].
+
 **Pflichtregeln für Recipient + Anrede** (siehe [[feedback-anschreiben-recipient]]):
 - **Recipient-Block ist die offizielle Firmenadresse** (juristischer Name + Straße + PLZ Ort, KEIN Land) — NICHT der Recruiter-Name, NICHT die Abteilung
 - **Anrede mit Nachname**, wenn die Kontaktperson bekannt ist: "Sehr geehrter Herr Müller," / "Sehr geehrte Frau Schmidt,"
@@ -221,7 +223,7 @@ Dieser Katalog ist die zentrale Wertbibliothek. Pro Bewerbung 2–3 Punkte ausw�
 ### Agentic-AI-Praxis
 
 - Produktionsreife Multi-Agent-Systeme bauen (LangGraph + Critic-Agents + HITL-Gates)
-- Multi-LLM-Orchestrierung über Claude, Gemini, Groq und Anthropic Managed Agents
+- Multi-LLM-Orchestrierung über Claude, Gemini, OpenAI und Anthropic Managed Agents
 - RAG-Architekturen mit MongoDB Vector Search und ChromaDB aufsetzen
 - Model Context Protocol (MCP) für Tool-Bindings nutzen
 - Autonome Analyse-, Entscheidungs- und Workflow-Agents in regulierten Kontexten konzipieren
@@ -306,7 +308,7 @@ API-Integration, Fehlerhandling, Logging sowie die strukturierte
 Verarbeitung großer Datenmengen gehören zu meinem Arbeitsalltag.
 
 Mein Hauptprojekt AI Orchestra ist ein agentisches Multi-Agent-System
-auf LangGraph-Basis, das mehrere LLM-Anbieter (Claude, Gemini, Groq)
+auf LangGraph-Basis, das mehrere LLM-Anbieter (Claude, Gemini, OpenAI)
 orchestriert. Über MongoDB Vector Search greift es als RAG-Layer auf
 eigene Daten zu; n8n dient als digitales Nervensystem zur Anbindung
 externer Dienste. Um Halluzinationen zu vermeiden, sichere ich die
