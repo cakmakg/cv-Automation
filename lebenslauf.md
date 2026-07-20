@@ -12,7 +12,7 @@
 
 ## Berufliches Profil
 
-Full-Stack Developer und AI Systems Builder mit Schwerpunkt auf Multi-Agent-Orchestrierung und Workflow-Automatisierung. Entwickle produktionsreife AI-Pipelines, die LangGraph-Multi-Agent-Architekturen mit n8n-Automatisierung verbinden. Praktische Erfahrung mit RAG-Systemen, event-driven AI-Workflows und Human-in-the-Loop-Qualitätssicherung. Mein unternehmerischer Hintergrund bringt Systemdenken und Ergebnisorientierung in jedes Projekt. Quereinsteiger mit tiefer praktischer AI-Expertise, aufgebaut durch konsequente Umschulung und reale Projektumsetzungen.
+Full-Stack Developer und AI Systems Builder mit Schwerpunkt auf Multi-Agent-Orchestrierung und Workflow-Automatisierung. Entwickle produktionsreife AI-Pipelines, die LangGraph-Multi-Agent-Architekturen mit n8n-Automatisierung verbinden. Praktische Erfahrung mit RAG-Systemen, event-driven AI-Workflows und Human-in-the-Loop-Qualitätssicherung. Mein unternehmerischer Hintergrund bringt Systemdenken und Ergebnisorientierung in jedes Projekt. Tiefe praktische AI-Expertise, aufgebaut durch konsequente Umschulung und reale Projektumsetzungen, die produktiv laufen.
 
 ---
 
@@ -134,8 +134,8 @@ Istanbul | 2009 – 2012
 
 ## Sprachen
 
-- **Deutsch:** Fließend
-- **Englisch:** Gut
+- **Deutsch:** Fließend (C1)
+- **Englisch:** B1 (sichere Verständigung)
 - **Spanisch:** Gut
 - **Türkisch:** Muttersprache
 

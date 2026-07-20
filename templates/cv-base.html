@@ -11,7 +11,7 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { font-family: 'DM Sans', sans-serif; font-size: 11.5px; line-height: 1.42; color: #1a1a2e; background: #fff; }
+  body { font-family: 'DM Sans', sans-serif; font-size: 12px; line-height: 1.42; color: #1a1a2e; background: #fff; }
   .page { width: 100%; max-width: 210mm; margin: 0 auto; padding: 0; }
 
   .header { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; margin-bottom: 10px; }
@@ -26,37 +26,40 @@
 
   .header-gradient { height: 3px; background: linear-gradient(to right, hsl(187, 74%, 32%), hsl(270, 70%, 45%)); border-radius: 2px; margin-bottom: 10px; }
 
-  .section { margin-bottom: 8px; }
+  .section { margin-bottom: 10px; }
   .section-title { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(187, 74%, 28%); border-bottom: 1.5px solid hsl(187, 50%, 88%); padding-bottom: 3px; margin-bottom: 6px; }
   a { white-space: nowrap; }
 
   .competencies-grid { display: flex; flex-wrap: wrap; gap: 4px; }
   .competency-tag { font-size: 11px; font-weight: 600; color: hsl(187, 74%, 22%); background: hsl(187, 55%, 95%); padding: 3px 10px; border-radius: 4px; border: 1px solid hsl(187, 40%, 82%); }
 
-  .job { margin-bottom: 6px; }
-  .job-header { display: flex; justify-content: space-between; align-items: baseline; }
-  .job-company { font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 700; color: hsl(270, 70%, 45%); }
+  .job { margin-bottom: 7px; }
+  .job-company { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: hsl(270, 70%, 45%); display: block; }
+  .job-meta { display: flex; align-items: baseline; gap: 6px; margin: 1px 0 3px; }
   .job-period { font-size: 11px; color: #666; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 500; }
-  .job-role { font-size: 12px; font-weight: 500; color: #333; margin-bottom: 1px; }
-  .job ul { padding-left: 15px; margin-top: 1px; }
-  .job li { font-size: 11px; line-height: 1.4; color: #333; margin-bottom: 1px; }
+  .job-meta-sep { color: #bbb; font-size: 11px; }
+  .job-role { font-size: 12px; font-weight: 500; color: #333; }
+  .job ul { padding-left: 16px; margin-top: 2px; }
+  .job li { font-size: 12px; line-height: 1.45; color: #333; margin-bottom: 2px; }
   .job li strong { font-weight: 700; color: #1a1a2e; }
 
   .project { margin-bottom: 5px; }
   .project-row { display: flex; justify-content: space-between; align-items: baseline; }
-  .project-title { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: hsl(270, 70%, 45%); }
-  .project-stack { font-size: 10px; color: #888; font-style: italic; }
-  .project-desc { font-size: 11px; color: #333; margin-top: 1px; line-height: 1.4; }
+  .project-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: hsl(270, 70%, 45%); }
+  .project-stack { font-size: 11px; color: #888; font-style: italic; }
+  .project-desc { font-size: 12px; color: #333; margin-top: 2px; line-height: 1.45; }
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-  .item-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; font-size: 11px; gap: 8px; }
+  .item-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; font-size: 12px; gap: 8px; }
   .item-row .left { color: #333; }
   .item-row .left strong { color: #1a1a2e; font-weight: 700; }
   .item-row .left em { color: hsl(270, 70%, 45%); font-style: normal; font-weight: 500; }
-  .item-row .right { font-size: 10.5px; color: #666; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .item-row .right { font-size: 11.5px; color: #666; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .cert-link { color: hsl(187, 74%, 32%); text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 2px; }
+  .cert-link-extra { font-size: 11px; color: #666; }
 
-  .skill-line { font-size: 11px; color: #333; margin-bottom: 2px; line-height: 1.45; }
+  .skill-line { font-size: 12px; color: #333; margin-bottom: 4px; line-height: 1.5; }
   .skill-line strong { font-weight: 700; color: #1a1a2e; }
 
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
@@ -101,42 +104,24 @@
     {{EXPERIENCE}}
   </div>
 
-  <div class="section avoid-break">
-    <div class="section-title">Projekte</div>
-    {{PROJECTS}}
-  </div>
+  {{PROJECTS_SECTION}}
 
   <div class="two-col">
     <div class="section avoid-break">
       <div class="section-title">Ausbildung</div>
-      <div class="item-row">
-        <span class="left"><strong>Clarusway</strong> — <em>Full Stack Web Developer (Umschulung)</em></span>
-        <span class="right">07/2024 – 08/2025</span>
-      </div>
-      <div class="item-row">
-        <span class="left"><strong>FAW</strong> — <em>Fachinformatiker AE/SI (Umschulung)</em></span>
-        <span class="right">02/2023 – 01/2024</span>
-      </div>
-      <div class="item-row">
-        <span class="left"><strong>Universität Istanbul</strong> — <em>Spanisch-Türkisch Übersetzung</em></span>
-        <span class="right">2009 – 2012</span>
-      </div>
+      {{EDUCATION}}
     </div>
 
     <div class="section avoid-break">
       <div class="section-title">Zertifikate</div>
-      <div class="item-row"><span class="left">Clarusway Full-Stack Developer</span><span class="right">Aug 2025</span></div>
-      <div class="item-row"><span class="left">Clarusway Backend Developer</span><span class="right">Mai 2025</span></div>
-      <div class="item-row"><span class="left">Clarusway Frontend Developer</span><span class="right">Okt 2024</span></div>
-      <div class="item-row"><span class="left">FAW Köln — IT-NETZWERKE</span><span class="right">Okt 2023</span></div>
-      <div class="item-row"><span class="left">FAW Köln — IT-SYSTEME</span><span class="right">Jun 2023</span></div>
+      {{CERTIFICATES}}
     </div>
   </div>
 
   <div class="section avoid-break">
-    <div class="section-title">Skills &amp; Sprachen</div>
+    <div class="section-title">Technische Kenntnisse &amp; Sprachen</div>
     {{SKILLS}}
-    <div class="skill-line"><strong>Sprachen:</strong> Deutsch (fließend) · Englisch (gut) · Spanisch (gut) · Türkisch (Muttersprache)</div>
+    <div class="skill-line"><strong>Sprachen:</strong> {{LANGUAGES}}</div>
   </div>
 
 </div>
