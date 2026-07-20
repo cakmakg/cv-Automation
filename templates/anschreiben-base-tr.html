@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Başvuru Mektubu — Gökhan Cakmak</title>
+<style>
+  @font-face { font-family: 'Space Grotesk'; src: url('../fonts/space-grotesk-latin.woff2') format('woff2'); font-weight: 300 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Space Grotesk'; src: url('../fonts/space-grotesk-latin-ext.woff2') format('woff2'); font-weight: 300 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'DM Sans'; src: url('../fonts/dm-sans-latin.woff2') format('woff2'); font-weight: 100 1000; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'DM Sans'; src: url('../fonts/dm-sans-latin-ext.woff2') format('woff2'); font-weight: 100 1000; font-style: normal; font-display: swap; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.48; color: #2a2a3a; background: #fff; }
+  .page { width: 100%; max-width: 210mm; margin: 0 auto; padding: 0; }
+
+  .header { margin-bottom: 8px; }
+  .header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 29px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; color: #1a1a2e; }
+  .header .contact-row { display: flex; flex-wrap: wrap; gap: 3px 12px; font-size: 12px; color: #555; margin-top: 6px; }
+  .header .contact-row .sep { color: #ccc; }
+
+  .header-gradient { height: 3px; background: linear-gradient(to right, hsl(187, 74%, 32%), hsl(270, 70%, 45%)); border-radius: 2px; margin-bottom: 16px; }
+
+  .meta-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .recipient { font-size: 13px; color: #333; line-height: 1.45; }
+  .date { font-size: 13px; color: #333; text-align: right; }
+
+  .subject { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 12px; }
+
+  .anrede { font-size: 14px; margin-bottom: 9px; }
+  .body p { font-size: 14px; margin-bottom: 7px; line-height: 1.48; }
+
+  .closing { font-size: 14px; margin-top: 10px; }
+  .signature { font-family: 'Space Grotesk', sans-serif; font-size: 15px; color: #1a1a2e; margin-top: 20px; }
+  .signature-img { display: block; width: {{SIGNATURE_WIDTH}}; height: auto; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>Gökhan Cakmak</h1>
+    <div class="contact-row">
+      <span>53121 Bonn, Almanya</span>
+      <span class="sep">|</span>
+      <span>+49 163 9734475</span>
+      <span class="sep">|</span>
+      <span>gokhan.cakmak@web.de</span>
+    </div>
+  </div>
+  <div class="header-gradient"></div>
+
+  <div class="meta-row">
+    <div class="recipient">{{RECIPIENT}}</div>
+    <div class="date">Bonn, {{DATE}}</div>
+  </div>
+
+  <div class="subject">{{SUBJECT}}</div>
+
+  <div class="body">
+    <p class="anrede">{{ANREDE}}</p>
+    {{PARAGRAPHS}}
+    <p>Saygılarımla</p>
+  </div>
+
+  <div class="signature">Gökhan Cakmak</div>
+  <img class="signature-img" src="{{SIGNATURE}}" alt="İmza">
+
+</div>
+</body>
+</html>
