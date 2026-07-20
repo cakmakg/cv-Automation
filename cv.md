@@ -133,7 +133,7 @@ Istanbul | 2009 – 2012
 
 ## Languages
 
-- **German:** Fluent (Fließend)
-- **English:** Good
+- **German:** Fluent (C1)
+- **English:** B1 (confident communication, problem-solving)
 - **Spanish:** Good
 - **Turkish:** Native (Muttersprache)
