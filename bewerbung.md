@@ -28,9 +28,39 @@
 
 ## ⚠️ NARRATIV-PFLICHT — RECRUITER-FEEDBACK (Juli 2026)
 
-> Direktes Feedback: „Das Anschreiben stellt dich nicht vor oder wie du arbeitest.
-> Es fehlt: Was ist dein Narrativ? Was sind deine Passungspunkte? Was zeichnet das Unternehmen
-> aus und wie lässt sich das verbinden? Was hast du konkret getan und welches Ergebnis damit produziert?"
+> **Wörtliches Feedback, Teil 1:**
+> „Das Anschreiben hat leider sehr offensichtliche Claude-Formulierungen und inhaltlich
+> orientiert es sich nur am Stellenprofil gematcht auf deinen Lebenslauf, aber es stellt
+> dich nicht vor oder wie du arbeitest."
+>
+> **Wörtliches Feedback, Teil 2:**
+> „Mein Hinweis ging eher in die Richtung das es inhaltlich wenig ansprechend ist und daher
+> an Überzeugung fehlen könnte. Es geht ja nicht nur darum Formulierungen aus einer
+> Stellenanzeige aufzugreifen sondern darzulegen: was ist das (dein) Narrativ, was sind deine
+> Passungspunkte. Was zeichnet das Unternehmen aus und ist deren Mission. Wie lässt sich das
+> verbinden. Was hast du bisher konkret getan und welches Ergebnis damit produziert."
+
+**Die schärfste Aussage darin ist „nur am Stellenprofil gematcht auf deinen Lebenslauf".**
+Das ist eine Kritik an der Arbeitsweise, nicht an einzelnen Sätzen: Ein Brief, der aus den
+Blöcken weiter unten zusammengesetzt wird, ist genau das — ein Abgleich. Die Blöcke sind
+Rohmaterial und Gedächtnisstütze. Der Brief wird für diese eine Firma geschrieben, nicht montiert.
+
+**Pflichtfelder im Config** (werden von `validate-anschreiben.mjs` geprüft):
+
+```js
+narrative: {
+  kern: '…',          // Wer bin ich fachlich — unabhängig von dieser Stelle
+  passung: ['…'],     // 2–3 konkrete Passungspunkte Profil ↔ Rolle
+},
+company: {
+  mission: '…',       // Was die Firma tut / wofür sie steht, in EIGENEN Worten
+  verbindung: '…',    // Warum mein Narrativ zu GENAU dieser Mission passt
+},
+jobKeywords: ['…'],   // 5–8 Muss-Begriffe aus der Anzeige (ATS, CV + Brief)
+```
+
+`company.mission` und `company.verbindung` sind Errors, wenn sie fehlen. `mission` muss außerdem
+im Brieftext wiederauftauchen — sonst ist sie nur eine Recherche-Notiz.
 
 Jedes Anschreiben muss DREI DINGE leisten — neben Stil und Struktur:
 
@@ -83,10 +113,20 @@ Jeder neue Brief muss diese fünf Regeln erfüllen, sonst ist er falsch:
    „ich packe an". KEINE steifen Floskeln wie „In Ihren Projekten sehe ich die Möglichkeit, meine
    Fähigkeiten gezielt einzubringen, insbesondere bei …" — das ist verboten (Bewerbungsdeutsch, kalt).
 
-2. **„Für Sie heißt das:" in JEDEM mittleren Absatz.** Jeder inhaltliche Absatz besteht aus zwei Teilen:
-   WAS ich tue/kann (konkret) → **„Für Sie heißt das: [konkreter Nutzen für die Firma]"** bzw.
-   „Für [Firma] heißt das: …". Nie nur auflisten, immer den Nutzen für den Arbeitgeber anschließen.
-   Siehe [[feedback-anschreiben-value-prop]]. Das ist die wichtigste Regel.
+2. **Jeder inhaltliche Absatz endet mit konkretem Nutzen — aber NICHT immer im selben Satzbau.**
+   Der Nutzen für die Firma bleibt Pflicht ([[feedback-anschreiben-value-prop]]). Die Formel
+   „Für Sie heißt das:" ist ab Juli 2026 **maximal einmal pro Brief** erlaubt, oft besser gar nicht.
+
+   > **Warum die Regel gedreht wurde:** Bis Juli 2026 stand hier „in JEDEM mittleren Absatz".
+   > Genau diese Gleichförmigkeit hat ein Recruiter als maschinengeschrieben erkannt
+   > („sehr offensichtliche Claude-Formulierungen"). Dieselbe Konstruktion zwei- oder dreimal
+   > auf einer Seite ist ein Schablonen-Signal, egal wie gut der Inhalt ist.
+   > `validate-anschreiben.mjs` wirft bei 2× einen Error.
+
+   Der Nutzen wird stattdessen als normaler Satz formuliert:
+   > ✗ „… Für Sie heißt das: In TypeScript und Node.js brauchen Sie mich nicht einzuarbeiten."
+   > ✓ „Angular müsste ich lernen, TypeScript und Node.js nicht. Das verkürzt Ihre Einarbeitung
+   >    auf ein Framework."
 
 3. **Ehrlicher aktueller Status in der Einleitung — je nach Tech-Bereich.** Das Tech-Profil deckt ZWEI
    Bewerbungsbereiche ab (User 2026-07-10):
@@ -113,11 +153,46 @@ Kurze, klare Sätze ([[feedback-anschreiben-kurz]]), kein Filler / keine CV-Wied
 
 ---
 
+## ⚠️ AI-TELLS — Formulierungen, die als maschinengeschrieben gelesen werden
+
+Recruiter Juli 2026: „sehr offensichtliche Claude-Formulierungen". Diese Muster sind der Grund.
+Sie sind grammatisch einwandfrei — genau das ist das Problem: der Rhythmus ist zu gleichförmig.
+`validate-anschreiben.mjs` prüft sie automatisch.
+
+| Muster | Ebene | Warum es auffällt | Ersatz |
+|---|---|---|---|
+| „nicht nur X, sondern auch Y" | **Error** | Die klassischste LLM-Konstruktion überhaupt | Zweite Hälfte als eigener Satz |
+| „in der heutigen Arbeitswelt", „in einer Welt, in der …" | **Error** | Leerformel-Einstieg | Ersatzlos streichen |
+| dieselbe Konstruktion 2× im Brief (z. B. „Für Sie heißt das:") | **Error** | Schablonen-Signal | Variieren oder auflösen |
+| „sowohl … als auch" | Warnung | Gleiche Familie | In zwei Aussagen trennen |
+| „Das ist ein anderer X als Y" als Absatz-Pointe | Warnung | Kontrast-Schluss, sehr wiedererkennbar | Absatz endet mit der Sache selbst |
+| „genau hier setze ich an" | Warnung | Übergangsformel | Satz beginnt direkt |
+| „es geht nicht (nur) um …" | Warnung | Rhetorische Vorwegnahme | Direkt sagen, worum es geht |
+| „Leidenschaft", „ich brenne für" | Warnung | Behauptete Emotion ohne Beleg | Zeigen, was gebaut wurde |
+| Dreier-Aufzählungen „A, B und C" (≥2 pro Brief) | Warnung | Gehäuft ein starker Generierungs-Marker | Eine auf zwei Glieder kürzen |
+
+Ebenfalls generisch und deshalb wertlos, weil sie „was zeichnet das Unternehmen aus" gerade
+NICHT beantworten: „innovatives Unternehmen", „spannende Projekte", „dynamisches Team",
+„Marktführer", „zukunftsorientiert", „Ihr hervorragender Ruf".
+
+> **Achtung, Regelumkehr:** „nicht nur … sondern auch" stand bis Juli 2026 in `HOW_SIGNALS`
+> und war damit ein *gefordertes* Signal. Der Validator hat den Tell aktiv belohnt.
+> Jetzt steht das Muster in `AI_TELLS`.
+
+---
+
 ## STIMME-REFERENZ — Freigegebene Absätze (Juli 2026)
 
 > Diese Absätze stammen aus tatsächlich freigegebenen und versendeten Briefen.
 > Sie zeigen die richtige Stimme. Neue Briefe müssen sich an diesen Mustern orientieren,
 > nicht an den Blocktexten weiter unten (die liefern nur Inhalt und Reihenfolge).
+
+> ⚠️ **Diese Absätze sind Stimm-Referenz, keine Satzbau-Vorlage.** Sie stammen aus der Zeit
+> vor dem Recruiter-Feedback und enthalten selbst zwei Muster, die inzwischen als AI-Tell
+> gelten: „Für Sie heißt das:" in fast jedem Beispiel und „nicht nur … sondern auch" in zweien.
+> Zu übernehmen ist die **Wärme und Konkretheit** („ist genau mein Ding", „mein Zuhause",
+> konkrete Geräte und Zahlen statt Abstraktionen), nicht die Konstruktion.
+> Historisch belassen, weil die Briefe so tatsächlich rausgingen.
 
 ### IT Support — Kompetenz-Absatz mit „Für heißt das:" (medfacilities Juli 2026)
 
@@ -158,11 +233,16 @@ Jedes Anschreiben folgt diesem Schema. Jeder Absatz hat eine klare Funktion:
 
 | # | Block | Funktion | Länge |
 |---|-------|----------|-------|
-| 1 | **Einleitung** | Wer bin ich + aktueller Status + warum diese Stelle | 3–4 Sätze |
-| 2 | **Kompetenz + Nutzen** | Kernkönnen konkret → „Für Sie heißt das: …" | 3–4 Sätze |
-| 3 | **Showcase + Nutzen** | 1 Hauptprojekt / 2. Kompetenz → „Für Sie heißt das: …" | 3–5 Sätze |
-| 4 | **Persönlichkeit + USP** | Selbstständigkeit/Soft Skills + was mich unterscheidet | 2–3 Sätze |
+| 1 | **Narrativ** | Wer bin ich + **wie arbeite ich** + aktueller Status | 3–4 Sätze |
+| 2 | **Passung + Nutzen** | Kernkönnen konkret → was die Firma dadurch spart/bekommt | 3–4 Sätze |
+| 3 | **Beleg + Ergebnis** | 1 Hauptprojekt oder Station → **was dabei herausgekommen ist** | 3–5 Sätze |
+| 4 | **Verbindung** | Mission der Firma ↔ mein Narrativ + was mich unterscheidet | 2–3 Sätze |
 | 5 | **Abschluss** | „Über die Einladung zu einem persönlichen Gespräch freue ich mich." | 1 Satz |
+
+Blöcke 2 und 3 tragen beide einen Nutzen bzw. ein Ergebnis — aber in **unterschiedlichem Satzbau**.
+Wenn beide gleich gebaut sind, ist es eine Schablone (siehe AI-Tells oben).
+Block 4 ist der Block, der vor Juli 2026 gefehlt hat: dort wird die Mission der Firma mit dem
+eigenen Narrativ verknüpft, statt nur Stellenprofil und Lebenslauf abzugleichen.
 
 ---
 
@@ -244,19 +324,25 @@ Aktuell betreibe ich drei produktive agentische KI Systeme. AI Orchestra orchest
 
 Das ist der wichtigste Block. Hier wird konkret, **was die Firma von mir hat**.
 
-### Gemeinsamer Rahmen (immer) — „Für Sie heißt das:"
+### Gemeinsamer Rahmen — Nutzen ja, Formel nein
 
-Value Proposition NICHT als steifer Sammelsatz, sondern als konkreter Nutzen am Ende JEDES mittleren
-Absatzes. Muster: erst WAS ich tue/kann, dann direkt der Nutzen für die Firma.
+Value Proposition NICHT als steifer Sammelsatz, sondern als konkreter Nutzen am Ende jedes mittleren
+Absatzes. Muster: erst WAS ich tue/kann, dann der Nutzen für die Firma — **im Satzbau variiert**.
 
-> „Ich [konkretes Können / konkrete Tätigkeit]. **Für [Firma] heißt das:** [konkreter Nutzen, den die
-> Firma davon hat — was wird leichter, schneller, stabiler, sichtbarer]."
+> „Ich [konkretes Können / konkrete Tätigkeit]. [Konkreter Nutzen, den die Firma davon hat —
+> was wird leichter, schneller, stabiler, sichtbarer.]"
 
-Beispiele aus freigegebenen Briefen (Stimme übernehmen):
+Vier Varianten, damit kein Absatz wie der vorherige klingt:
+> a) direkt: „Das verkürzt Ihre Einarbeitung auf ein Framework."
+> b) aus Firmensicht: „Ihre Anwender merken davon nur, dass der Rollout durchläuft."
+> c) als Folge: „Damit fällt die Nacharbeit weg, die sonst beim Gerätetausch anfällt."
+> d) einmal pro Brief erlaubt: „Für Sie heißt das: …"
+
+Beispiele aus freigegebenen Briefen (Stimme übernehmen, Formel nicht wiederholen):
 > „Endgeräte einzurichten und ans Laufen zu bringen, ist genau mein Ding. … Für die Anwender vor Ort
 > heißt das: Rollout und Gerätetausch laufen sauber, und alle können ohne Reibungsverluste weiterarbeiten."
-> „Als Fachinformatiker für Systemintegration sind Windows, Server, Netzwerke und Migrationen mein Zuhause.
-> … Für Sie heißt das: Ich übernehme nicht nur den Anwendersupport, sondern auch die Administration dahinter."
+> „Als Fachinformatiker für Systemintegration sind Windows, Server, Netzwerke und Migrationen mein
+> Zuhause. Den Anwendersupport übernehme ich genauso wie die Administration dahinter."
 
 VERBOTEN als Rahmen: „In Ihren Projekten sehe ich die Möglichkeit, meine Fähigkeiten gezielt
 einzubringen, insbesondere bei …" — kalt, generisch, kein konkreter Nutzen. Nicht verwenden.

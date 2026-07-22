@@ -106,6 +106,17 @@ export async function validateCV(config) {
     }
   });
 
+  // ── 2b. UNVERÄNDERLICH (User 22.07.2026): Schwerpunkte-Zeile darf NIE umbrechen. ─
+  // Ohne cv.profil rendert das Template "Schwerpunkte: A · B · C" — ab ~100 Zeichen
+  // (inkl. Label) bricht die Zeile bei 12px um. Ground-Truth-Prüfung läuft zusätzlich
+  // per pdftotext in generate-bewerbung.mjs (checkAtsExtraction oneLiners).
+  if (!cv.profil && comps.length > 0) {
+    const schwerpunkteLine = `Schwerpunkte: ${comps.join(' · ')}`;
+    if (schwerpunkteLine.length > 100) {
+      errors.push(`Schwerpunkte-Zeile ${schwerpunkteLine.length} Zeichen (> 100) — bricht auf 2. Zeile um. Tags kürzen oder streichen (Regel: IMMER einzeilig).`);
+    }
+  }
+
   // ── 3. Skills: category count ─────────────────────────────────────────────
   const skills = cv.skills ?? [];
   if (skills.length === 0) {
@@ -146,6 +157,16 @@ export async function validateCV(config) {
     if (experience.length > 5) {
       warnings.push(`${experience.length} experience entries — max 5 recommended for 1-page fit`);
     }
+
+    // UNVERÄNDERLICH (User 22.07.2026): jede Bullet-Beschreibung einzeilig — kurz und klar.
+    experience.forEach((j) => {
+      (j.bullets ?? []).forEach((b) => {
+        const visible = b.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
+        if (visible.length > 95) {
+          errors.push(`Bullet bei "${j.company}" hat ${visible.length} Zeichen (> 95) — bricht auf 2. Zeile um, muss einzeilig sein: "${visible.slice(0, 50)}…"`);
+        }
+      });
+    });
   }
   // If no experience override, default is used (which always contains required entries) — no error needed
 
@@ -169,7 +190,82 @@ export async function validateCV(config) {
     errors.push(`Languages: English overclaim — max "B1, sichere Verständigung" or "technisches Lesen sicher, Verständigung gut" (see user_language_levels memory)`);
   }
 
-  // ── 8. Projects: length and maturity signals ─────────────────────────────
+  // ── 8. Profil: stellt die Person vor (Recruiter-Feedback Juli 2026) ──────
+  // „es gibt oben Kernkompetenzen und unten nochmal Skills" — die Tagreihe oben
+  // war eine Dopplung. Ersetzt durch einen Profil-Fließtext; ohne cv.profil
+  // fällt das Template auf eine Schwerpunkte-Zeile zurück (schwächer).
+  if (!cv.profil) {
+    warnings.push(
+      `cv.profil fehlt — ohne ihn rendert das Template nur eine "Schwerpunkte"-Zeile aus den Kompetenzen. ` +
+      `2 bis 3 Sätze: wer du fachlich bist und wie du arbeitest.`
+    );
+  } else if (cv.profil.length > 340) {
+    warnings.push(`cv.profil ist ${cv.profil.length} Zeichen — ≤340 halten, sonst kippt die 1-Seiten-Regel`);
+  }
+
+  // ── 9. Dopplung Kompetenzen ↔ Skills ─────────────────────────────────────
+  if (comps.length > 0 && skills.length > 0) {
+    const skillTerms = new Set(
+      allSkillText.toLowerCase().split(/[,;:·|\s]+/).filter((t) => t.length > 3)
+    );
+    const duplicated = comps.filter((c) => {
+      const terms = c.toLowerCase().split(/[&,·\s]+/).filter((t) => t.length > 3);
+      return terms.length > 0 && terms.every((t) => skillTerms.has(t));
+    });
+    if (duplicated.length > 0) {
+      warnings.push(
+        `Kompetenz(en) wiederholen nur Skill-Begriffe: ${duplicated.map((d) => `"${d}"`).join(', ')} — ` +
+        `genau die Dopplung, die der Recruiter bemängelt hat. Entweder cv.profil als Fließtext setzen ` +
+        `oder die Kompetenzen anders formulieren als die Skill-Liste.`
+      );
+    }
+  }
+
+  // ── 10. Datumsformat einheitlich (Designsprache-Konsistenz) ──────────────
+  // Recruiter: „Der Lebenslauf ist nicht konsistent (sowohl Designsprache wie Struktur)".
+  const MONTH_RANGE = /^\d{2}\/\d{4}\s*[–-]\s*(\d{2}\/\d{4}|heute)$/;
+  const YEAR_RANGE  = /^\d{4}\s*[–-]\s*\d{4}$/;
+  const isCleanRange = (d) => MONTH_RANGE.test(d.trim()) || YEAR_RANGE.test(d.trim());
+
+  (config.cv.experience ?? []).forEach((j) => {
+    if (j.period && !isCleanRange(j.period)) {
+      warnings.push(`Experience "${j.company}": Zeitraum "${j.period}" weicht vom Format MM/JJJJ – MM/JJJJ ab`);
+    }
+  });
+  (education ?? []).forEach((e) => {
+    if (e.date && !isCleanRange(e.date)) {
+      warnings.push(`Education "${e.school}": Zeitraum "${e.date}" weicht vom Format MM/JJJJ – MM/JJJJ ab`);
+    }
+  });
+
+  // ── 11. ATS keyword coverage über den gesamten CV-Text ───────────────────
+  // Der CV ist das Dokument, das die Bewerbungssoftware bewertet — nicht das
+  // Anschreiben. Bis Juli 2026 lief hier gar keine Keyword-Prüfung.
+  const jobKeywords = Array.isArray(config.jobKeywords) ? config.jobKeywords : [];
+  if (jobKeywords.length > 0) {
+    const cvCorpus = [
+      cv.profil ?? '',
+      cv.tagline ?? '',
+      comps.join(' '),
+      allSkillText,
+      (cv.projects ?? []).map((p) => `${p.title} ${p.stack} ${p.desc}`).join(' '),
+      (cv.experience ?? []).map((j) => `${j.company} ${j.role} ${(j.bullets ?? []).join(' ')}`).join(' '),
+      (education ?? []).map((e) => `${e.school} ${e.program}`).join(' '),
+    ].join('\n').toLowerCase();
+
+    const missing = jobKeywords.filter((kw) => !cvCorpus.includes(kw.toLowerCase()));
+    const coverage = (jobKeywords.length - missing.length) / jobKeywords.length;
+    if (coverage < 0.7) {
+      errors.push(
+        `ATS coverage im CV ${Math.round(coverage * 100)}% (< 70%) — fehlend: ${missing.join(', ')}. ` +
+        `Der CV ist das Dokument, das die Bewerbungssoftware scannt.`
+      );
+    } else if (missing.length > 0) {
+      warnings.push(`ATS keywords nicht im CV (${Math.round(coverage * 100)}% coverage): ${missing.join(', ')}`);
+    }
+  }
+
+  // ── 12. Projects: length and maturity signals ────────────────────────────
   const projects = cv.projects ?? [];
   if (projects.length > 0) {
     warnings.push(`Projects section: ${projects.length} project(s) — verify 1-page A4 after PDF generation`);
@@ -226,6 +322,15 @@ if (isMain) {
   if (!errors.some(e => e.includes('Education'))) console.log(`  ✓ Education format correct`);
   if (!errors.some(e => e.includes('Languages'))) console.log(`  ✓ Languages: no overclaim`);
   if ((cv?.projects ?? []).length === 0) console.log(`  ✓ No projects (1-page safe)`);
+  console.log(`  ${cv?.profil ? '✓' : '○'} Profil-Fließtext (cv.profil)`);
+  if (!warnings.some(w => w.includes('wiederholen nur Skill-Begriffe'))) console.log(`  ✓ Keine Dopplung Kompetenzen ↔ Skills`);
+  if (Array.isArray(config.jobKeywords) && config.jobKeywords.length > 0) {
+    if (!errors.some(e => e.includes('ATS coverage')) && !warnings.some(w => w.includes('ATS keywords'))) {
+      console.log(`  ✓ ATS keywords: ${config.jobKeywords.length}/${config.jobKeywords.length} im CV gefunden`);
+    }
+  } else {
+    console.log(`  ○ ATS keywords: keine konfiguriert (jobKeywords: [...] im Config setzen)`);
+  }
 
   console.log('');
 

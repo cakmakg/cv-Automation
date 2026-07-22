@@ -100,17 +100,26 @@ const signatureDataURI = existsSync(signaturePath)
 // --- render CV HTML ---
 const cvTemplate = readFileSync(resolve(CAREER_OPS, cvTemplateFile), 'utf-8');
 
-const competenciesHtml = cv.competencies
-  .map((c) => `<span class="competency-tag">${c}</span>`)
-  .join('\n      ');
+// --- Profil: Fließtext, der die Person vorstellt (Recruiter-Feedback Juli 2026) ---
+// Ersetzt die frühere Kernkompetenzen-Tagreihe, die eine Dopplung der Skills unten war.
+// Fallback für Altkonfigs ohne cv.profil: die Kompetenzen als eine Schwerpunkte-Zeile.
+const profilBody = cv.profil
+  ? `<div class="profil">${cv.profil}</div>`
+  : (cv.competencies?.length
+      ? `<div class="profil"><strong>Schwerpunkte:</strong> ${cv.competencies.join(' · ')}</div>`
+      : '');
+
+const profilSection = profilBody
+  ? `<div class="section avoid-break">
+    <div class="section-title">Profil</div>
+    ${profilBody}
+  </div>`
+  : '';
 
 const projectsHtml = (cv.projects || [])
   .map(
     (p) => `<div class="project">
-      <div class="project-row">
-        <span class="project-title">${p.title}</span>
-        <span class="project-stack">${p.stack}</span>
-      </div>
+      <div class="project-head"><span class="project-title">${p.title}</span> <span class="project-stack">${p.stack}</span></div>
       <div class="project-desc">${p.desc}</div>
     </div>`
   )
@@ -129,15 +138,22 @@ const skillsHtml = cv.skills
   .join('\n    ');
 
 // --- Berufserfahrung: configurable via cv.experience, else default (Tech-CV) ---
+// UNVERÄNDERLICHE REGELN (User 22.07.2026):
+//   1. Reisegesucht.com (aktuell) steht IMMER drin — die Anschreiben sagen „Zurzeit arbeite ich
+//      in einem Reisebüro", der CV muss das zeigen (Konsistenz-Lücke bis 22.07. behoben).
+//   2. Jede Bullet-Beschreibung ist EINZEILIG im PDF (kurz und klar, kein Umbruch) —
+//      wird nach der PDF-Erzeugung per pdftotext hart geprüft (checkAtsExtraction).
 const defaultExperience = [
+  { company: 'Reisegesucht.com — Köln', period: '03/2026 – heute', role: 'Frontend &amp; Marketing',
+    bullets: ['Frontend-Design und Marketing für ein Reisebüro: Webseiten, Content, Kampagnen'] },
   { company: 'GIS GmbH — Bonn', period: '11/2025 – 02/2026', role: '1st Level IT Support (Praktikum)',
-    bullets: ['1st Level IT Support, Personalplanung und Zeiterfassung in strukturiertem Enterprise-Umfeld'] },
+    bullets: ['1st Level IT Support, Personalplanung und Zeiterfassung im Enterprise-Umfeld'] },
   { company: 'Vidinli Software — Bonn', period: '09/2025 – 10/2025', role: 'Frontend Developer (Praktikum)',
-    bullets: ['Entwicklung des Frontends einer Shopping-Plattform mit <strong>React.js</strong> und <strong>TypeScript</strong> — Komponentenarchitektur, responsive UI, State-Management'] },
+    bullets: ['Entwicklung des Frontends einer Shopping-Plattform mit <strong>React.js</strong> und <strong>TypeScript</strong>'] },
   { company: 'EMLAK AG — Köln', period: '11/2023 – 05/2024', role: 'IT-Praktikum (im Rahmen der Umschulung)',
-    bullets: ['Unterstützung in IT-Systemen und Netzwerken — erste praktische Erfahrungen in IT-Infrastruktur'] },
+    bullets: ['Unterstützung in IT-Systemen und Netzwerken — erste Praxis in IT-Infrastruktur'] },
   { company: 'Mobile Coffee Bar &amp; Catering — Bonn', period: '2020 – 2023', role: 'Gründer &amp; Geschäftsführer (Selbstständiger Unternehmer)',
-    bullets: ['Gründung und Leitung eines Gastronomie-/Catering-Unternehmens — volle operative Verantwortung: Kundenbetreuung, Finanzen, Logistik, Team'] },
+    bullets: ['Gründung und Leitung eines Catering-Unternehmens: Kunden, Finanzen, Logistik, Team'] },
 ];
 
 // --- Sprachen: configurable via cv.languages, else default (generisch, alle Profile) ---
@@ -167,6 +183,7 @@ const FIXED_CERTIFICATES = [
 if (cv.certificates) {
   console.warn('  ⚠ cv.certificates im Config wird IGNORIERT — Zertifikate sind fix (User-Regel 2026-07-10).');
 }
+// Datum LINKS vor dem Eintrag, im selben Textlauf (siehe Kommentar in cv-base.html).
 const certificatesHtml = FIXED_CERTIFICATES
   .map((c) => {
     const nameHtml = c.url
@@ -175,7 +192,7 @@ const certificatesHtml = FIXED_CERTIFICATES
     const extraHtml = c.url2
       ? ` <span style="color:#bbb;font-size:11px;">·</span> <a class="cert-link" href="${c.url2}">${c.url2Label || 'Anhang'}</a>`
       : '';
-    return `<div class="item-row"><span class="left">${nameHtml}${extraHtml}</span><span class="right">${c.date}</span></div>`;
+    return `<div class="entry-line"><span class="entry-date">${c.date}</span> <span class="entry-sep">·</span> ${nameHtml}${extraHtml}</div>`;
   })
   .join('\n      ');
 
@@ -186,17 +203,15 @@ const defaultEducation = [
   { school: 'Universität Istanbul', program: 'Spanisch-Türkisch', date: '2009 – 2012' },
 ];
 const educationHtml = (cv.education || defaultEducation)
-  .map((e) => `<div class="item-row"><span class="left"><strong>${e.school}</strong> — <em>${e.program}</em></span><span class="right">${e.date}</span></div>`)
+  .map((e) => `<div class="entry-line"><span class="entry-date">${e.date}</span> <span class="entry-sep">·</span> <strong>${e.school}</strong> — <em>${e.program}</em></div>`)
   .join('\n      ');
 
+// Zeitraum zuerst und linksbündig (Recruiter-Feedback Juli 2026), aber inline
+// im selben Textfluss wie der Eintrag — siehe Begründung in cv-base.html.
 const experienceHtml = (cv.experience || defaultExperience)
-  .map((j) => `<div class="job">
-      <div class="job-company">${j.company}</div>
-      <div class="job-meta">
-        <span class="job-period">${j.period}</span>
-        <span class="job-meta-sep">·</span>
-        <span class="job-role">${j.role}</span>
-      </div>
+  .map((j) => `<div class="entry">
+      <div class="entry-head"><span class="entry-date">${j.period}</span> <span class="entry-sep">·</span> <span class="entry-title">${j.company}</span></div>
+      <div class="entry-sub">${j.role}</div>
       <ul>${j.bullets.map((b) => `<li>${b}</li>`).join('')}</ul>
     </div>`)
   .join('\n\n    ');
@@ -208,7 +223,8 @@ const cvHtml = cvTemplate
     tagline ? `<div class="tagline">${tagline}</div>` : ''
   )
   .replace('{{PHOTO}}', photoDataURI)
-  .replace('{{COMPETENCIES}}', competenciesHtml)
+  .replace('{{PROFIL_SECTION}}', profilSection)
+  .replace('{{COMPETENCIES}}', '')
   .replace('{{EXPERIENCE}}', experienceHtml)
   .replace('{{PROJECTS}}', projectsHtml)
   .replace('{{PROJECTS_SECTION}}', projectsSection)
@@ -268,6 +284,66 @@ function runPdf(htmlPath, pdfPath) {
   }
 }
 
+/**
+ * Liest den fertigen PDF-Text so aus, wie ein ATS-Parser ihn sieht, und prüft die
+ * zwei Fehler, die vor dem Umbau Juli 2026 unbemerkt durchgingen:
+ *   - Sektionsüberschriften, die durch letter-spacing zu „Z E R T I F I K AT E"
+ *     zerfallen und dadurch für die Bewerbungssoftware unsichtbar werden
+ *   - Zeiträume, die beim Extrahieren von ihrem Eintrag getrennt werden
+ *
+ * Weicher Check: ohne pdftotext im PATH wird er übersprungen, nicht erzwungen.
+ *
+ * Zusätzlich (User-Regel 22.07.2026, unveränderlich): `oneLiners` sind Texte, die im
+ * gerenderten PDF auf GENAU EINER Zeile stehen müssen — die Schwerpunkte-Zeile und jede
+ * Berufserfahrungs-Beschreibung. Bricht eine um, ist das ein Verstoß.
+ */
+function checkAtsExtraction(pdfPath, { headings, pairs, oneLiners = [] }) {
+  const res = spawnSync('pdftotext', ['-enc', 'UTF-8', '-f', '1', '-l', '1', pdfPath, '-'], { encoding: 'utf-8' });
+  if (res.error || res.status !== 0) {
+    console.log('  ○ ATS-Extraktionsprüfung übersprungen (pdftotext nicht verfügbar)');
+    return;
+  }
+
+  const norm = (s) => s.replace(/[‐-―−]/g, '-').replace(/\s+/g, ' ').trim();
+  const text = norm(res.stdout);
+  const lines = res.stdout.split('\n').map(norm).filter(Boolean);
+  const problems = [];
+
+  for (const h of headings) {
+    if (text.toLowerCase().includes(h.toLowerCase())) continue;
+    // Gesperrt gesetzt? Dann steht zwischen allen Buchstaben ein Leerzeichen.
+    const spaced = h.split('').join('\\s*');
+    problems.push(
+      new RegExp(spaced, 'i').test(text)
+        ? `Überschrift "${h}" wird gesperrt extrahiert (letter-spacing) — für ATS unlesbar`
+        : `Überschrift "${h}" fehlt im extrahierten Text`
+    );
+  }
+
+  for (const { date, entry, label } of pairs) {
+    const d = norm(date);
+    const e = norm(entry);
+    if (!lines.some((l) => l.includes(d) && l.includes(e))) {
+      problems.push(`"${label}": Zeitraum "${date}" steht nicht in derselben Zeile wie der Eintrag — ATS ordnet das Datum nicht zu`);
+    }
+  }
+
+  // Einzeiligkeit: HTML-Tags/Entities raus, dann muss der komplette Text in EINER Zeile stehen.
+  for (const { label, text } of oneLiners) {
+    const plain = norm(text.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&'));
+    if (!lines.some((l) => l.includes(plain))) {
+      problems.push(`${label} bricht im PDF auf mehrere Zeilen um — muss einzeilig sein (kürzen!): "${plain.slice(0, 60)}…"`);
+    }
+  }
+
+  if (problems.length === 0) {
+    console.log(`  ✓ ATS-Extraktion: Überschriften intakt, alle ${pairs.length} Zeiträume korrekt zugeordnet`);
+  } else {
+    console.warn('  ⚠️  ATS-Extraktionsprobleme:');
+    problems.forEach((p) => console.warn(`     ✗ ${p}`));
+  }
+}
+
 const cvPdfPath = resolve(CAREER_OPS, `output/cv-${slug}-${isoDate}.pdf`);
 const asPdfPath = resolve(CAREER_OPS, `output/anschreiben-${slug}-${isoDate}.pdf`);
 const paketPdfPath = resolve(CAREER_OPS, `output/bewerbungspaket-${slug}-${isoDate}.pdf`);
@@ -283,6 +359,29 @@ if (cvPageCount > 1) {
 } else {
   console.log(`  ✓ CV page count: 1 page`);
 }
+
+checkAtsExtraction(cvPdfPath, {
+  headings: [
+    ...(profilSection ? ['PROFIL'] : []),
+    'BERUFSERFAHRUNG',
+    ...(projectsSection ? ['PROJEKTE'] : []),
+    'AUSBILDUNG', 'ZERTIFIKATE', 'KENNTNISSE',
+  ],
+  pairs: [
+    ...(cv.experience || defaultExperience).map((j) => ({ date: j.period, entry: j.company.replace(/&amp;/g, '&'), label: j.company.replace(/&amp;/g, '&') })),
+    ...(cv.education || defaultEducation).map((e) => ({ date: e.date, entry: e.school, label: e.school })),
+    ...FIXED_CERTIFICATES.map((c) => ({ date: c.date, entry: c.name, label: c.name })),
+  ],
+  // Unveränderliche Einzeiligkeits-Regel (User 22.07.2026):
+  // Schwerpunkte-Zeile + jede Berufserfahrungs-Bullet dürfen nicht umbrechen.
+  oneLiners: [
+    ...(!cv.profil && cv.competencies?.length
+      ? [{ label: 'Schwerpunkte-Zeile', text: `Schwerpunkte: ${cv.competencies.join(' · ')}` }]
+      : []),
+    ...(cv.experience || defaultExperience).flatMap((j) =>
+      (j.bullets ?? []).map((b) => ({ label: `Bullet "${j.company.replace(/&amp;/g, '&')}"`, text: b }))),
+  ],
+});
 
 runPdf(asHtmlPath, asPdfPath);
 console.log(`  ✓ Anschreiben PDF: output/anschreiben-${slug}-${isoDate}.pdf`);
