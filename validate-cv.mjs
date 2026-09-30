@@ -22,6 +22,7 @@
 import { resolve, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { existsSync } from 'fs';
+import { resolveConfig } from './profiles.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -73,6 +74,11 @@ export async function validateCV(config) {
   const { slug, cv } = config;
   const errors = [];
   const warnings = [];
+  // Meldungen, die für das Profil gewollt sind (profiles.mjs rules.expectedCv), werden nur
+  // gezählt. Sonst steht bei jedem Lauf dieselbe Liste da und echte Treffer gehen unter.
+  const expected = new Set(config._profile?.expectedCv ?? []);
+  const suppressed = [];
+  const warn = (id, msg) => (expected.has(id) ? suppressed.push(id) : warnings.push(msg));
 
   if (!cv) {
     errors.push('cv section missing from config');
@@ -89,13 +95,16 @@ export async function validateCV(config) {
     warnings.push(`Tagline length ${tagline.length} chars — risk of wrapping to 2nd line (keep ≤70)`);
   }
   if (!tagline) {
-    warnings.push('Tagline is empty — OK if tech stack already in Kernkompetenzen, else add role context');
+    warn('taglineEmpty', 'Tagline is empty — OK if tech stack already in Kernkompetenzen, else add role context');
   }
 
   // ── 2. Competencies: max 4 tags, ≤5 words each ───────────────────────────
   const comps = cv.competencies ?? [];
+  // Seit 28.08.2026: mit cv.profil ist competencies:[] die GEWOLLTE Bereich-1-Struktur —
+  // Profil-Zeile statt "Schwerpunkte:"-Zeile, beides zusammen wäre eine Dopplung.
+  // Ohne Profil bleibt eine leere Kompetenzliste ein Fehler (dann hat der CV oben gar nichts).
   if (comps.length === 0) {
-    errors.push('Competencies array is empty');
+    if (!cv.profil) errors.push('Competencies array is empty — entweder Kompetenzen setzen oder cv.profil (Bereich-1-Struktur)');
   } else if (comps.length > 4) {
     errors.push(`${comps.length} competency tags — max 4 for single-line Kernkompetenzen display`);
   }
@@ -154,8 +163,10 @@ export async function validateCV(config) {
         errors.push(`Required experience missing: ${label} — must always appear (User rule 2026-07-08)`);
       }
     });
-    if (experience.length > 5) {
-      warnings.push(`${experience.length} experience entries — max 5 recommended for 1-page fit`);
+    // 6 = die feste Stationsliste seit 28.08.2026 (inkl. UNO-Flüchtlingshilfe). Alles darüber
+    // sprengt erfahrungsgemäß die 1-Seiten-Regel.
+    if (experience.length > 6) {
+      warnings.push(`${experience.length} experience entries — max 6 recommended for 1-page fit`);
     }
 
     // UNVERÄNDERLICH (User 22.07.2026): jede Bullet-Beschreibung einzeilig — kurz und klar.
@@ -195,7 +206,7 @@ export async function validateCV(config) {
   // war eine Dopplung. Ersetzt durch einen Profil-Fließtext; ohne cv.profil
   // fällt das Template auf eine Schwerpunkte-Zeile zurück (schwächer).
   if (!cv.profil) {
-    warnings.push(
+    warn('profilMissing',
       `cv.profil fehlt — ohne ihn rendert das Template nur eine "Schwerpunkte"-Zeile aus den Kompetenzen. ` +
       `2 bis 3 Sätze: wer du fachlich bist und wie du arbeitest.`
     );
@@ -213,7 +224,7 @@ export async function validateCV(config) {
       return terms.length > 0 && terms.every((t) => skillTerms.has(t));
     });
     if (duplicated.length > 0) {
-      warnings.push(
+      warn('kompetenzDopplung',
         `Kompetenz(en) wiederholen nur Skill-Begriffe: ${duplicated.map((d) => `"${d}"`).join(', ')} — ` +
         `genau die Dopplung, die der Recruiter bemängelt hat. Entweder cv.profil als Fließtext setzen ` +
         `oder die Kompetenzen anders formulieren als die Skill-Liste.`
@@ -268,7 +279,7 @@ export async function validateCV(config) {
   // ── 12. Projects: length and maturity signals ────────────────────────────
   const projects = cv.projects ?? [];
   if (projects.length > 0) {
-    warnings.push(`Projects section: ${projects.length} project(s) — verify 1-page A4 after PDF generation`);
+    warn('projectsInfo', `Projects section: ${projects.length} project(s) — verify 1-page A4 after PDF generation`);
     projects.forEach((p, i) => {
       const desc = p.desc ?? '';
       const title = p.title ?? `Project ${i + 1}`;
@@ -277,12 +288,12 @@ export async function validateCV(config) {
       }
       const hasSignal = MATURITY_SIGNALS.some(s => desc.includes(s) || (p.title ?? '').includes(s));
       if (!hasSignal) {
-        warnings.push(`"${title}": description lacks maturity signals (HITL, RBAC, Critic-Agent, Test-Suite, Checkpointer, etc.)`);
+        warn('projectMaturity',`"${title}": description lacks maturity signals (HITL, RBAC, Critic-Agent, Test-Suite, Checkpointer, etc.)`);
       }
     });
   }
 
-  return { errors, warnings, slug };
+  return { errors, warnings, suppressed, slug };
 }
 
 // ─── CLI mode ────────────────────────────────────────────────────────────────
@@ -303,14 +314,17 @@ if (isMain) {
     process.exit(1);
   }
 
-  const config = (await import(pathToFileURL(configPath).href)).default;
+  const config = resolveConfig((await import(pathToFileURL(configPath).href)).default);
   const { slug, cv } = config;
 
   console.log(`\n📋 Validating CV: ${slug}`);
   console.log(`   Tagline: ${cv?.tagline ?? '—'}`);
   console.log(`   Competencies: ${(cv?.competencies ?? []).length}  |  Skills: ${(cv?.skills ?? []).length}  |  Projects: ${(cv?.projects ?? []).length}\n`);
 
-  const { errors, warnings } = await validateCV(config);
+  const { errors, warnings, suppressed } = await validateCV(config);
+  if (suppressed.length > 0) {
+    console.log(`  ○ ${suppressed.length} für Profil ${config._profile.key} gewollte Meldung(en) ausgeblendet: ${[...new Set(suppressed)].join(', ')}`);
+  }
 
   // Print passed checks
   const taglineSegs = (cv?.tagline ?? '').split('·').filter(Boolean).length;

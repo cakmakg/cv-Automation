@@ -40,6 +40,7 @@
 import { resolve, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { existsSync } from 'fs';
+import { resolveConfig, stripFixedTexts } from './profiles.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -197,14 +198,24 @@ function contentTokens(str) {
  */
 export async function validateAnschreiben(config) {
   const { slug, subject, anschreiben, company, narrative } = config;
+  const rules = config._profile;
   const paragraphs = anschreiben?.paragraphs ?? [];
   const fullText = paragraphs.join('\n');
   const lowerText = fullText.toLowerCase();
+  // Stilregeln laufen nur über neu geschriebenen Text; freigegebene Bausteine (profiles.mjs)
+  // hat der User so abgenommen, ihre Treffer wären bei jedem Lauf dieselben Fehlalarme.
+  const styleParagraphs = paragraphs.map(stripFixedTexts);
+  const styleText = styleParagraphs.join('\n');
   const errors = [];
   const warnings = [];
 
-  // ── 1. Paragraph count (4–5) ───────────────────────────────────────────────
-  if (paragraphs.length < 4) {
+  // ── 1. Paragraph count (4–5, mit Profil: dessen Spanne) ───────────────────
+  if (rules) {
+    const [min, max] = rules.paragraphs;
+    if (paragraphs.length < min || paragraphs.length > max) {
+      warnings.push(`Paragraph count is ${paragraphs.length} — Profil ${rules.key} erwartet ${min}–${max} (inkl. fester Schlussabsätze)`);
+    }
+  } else if (paragraphs.length < 4) {
     errors.push(`Paragraph count is ${paragraphs.length} — need at least 4 (Narrativ / Passung / Beleg+Ergebnis / Verbindung + Abschluss)`);
   } else if (paragraphs.length > 5) {
     warnings.push(`Paragraph count is ${paragraphs.length} — 4–5 recommended (shorter is better)`);
@@ -224,7 +235,7 @@ export async function validateAnschreiben(config) {
 
   // ── 3. No compound-hyphen words in body text ─────────────────────────────
   const dashViolations = [];
-  paragraphs.forEach((p, i) => {
+  styleParagraphs.forEach((p, i) => {
     const matches = [...p.matchAll(DASH_IN_BODY)];
     if (matches.length > 0) {
       dashViolations.push({ para: i + 1, words: matches.map((m) => m[0]).slice(0, 4) });
@@ -236,21 +247,21 @@ export async function validateAnschreiben(config) {
 
   // ── 4. Forbidden phrases ─────────────────────────────────────────────────
   FORBIDDEN_PHRASES.forEach(({ phrase, msg }) => {
-    if (fullText.includes(phrase)) {
+    if (styleText.includes(phrase)) {
       errors.push(`Forbidden phrase: "${phrase}" — ${msg}`);
     }
   });
 
   // ── 5. AI-Tells ──────────────────────────────────────────────────────────
   AI_TELLS.forEach(({ re, label, msg, level }) => {
-    const hits = fullText.match(re);
+    const hits = styleText.match(re);
     if (hits) {
       const entry = `AI-Tell ${label} (${hits.length}×): ${msg}`;
       (level === 'error' ? errors : warnings).push(entry);
     }
   });
 
-  const tricolons = countTricolons(fullText);
+  const tricolons = countTricolons(styleText);
   if (tricolons >= 2) {
     warnings.push(
       `${tricolons} Dreier-Aufzählungen ("A, B und C") im Brief — gehäuft ein starker Generierungs-Marker. ` +
@@ -260,7 +271,11 @@ export async function validateAnschreiben(config) {
 
   // ── 6. Closing sentence format ───────────────────────────────────────────
   const lastPara = (paragraphs[paragraphs.length - 1] ?? '').trim();
-  if (!lastPara.includes('Über die Einladung')) {
+  if (rules) {
+    if (lastPara !== rules.closing) {
+      errors.push(`Closing sentence: Profil ${rules.key} verlangt als letzten Absatz "${rules.closing}" (found: "${lastPara.slice(0, 50)}…")`);
+    }
+  } else if (!lastPara.includes('Über die Einladung')) {
     errors.push(`Closing sentence missing — last paragraph must be exactly: "Über die Einladung zu einem persönlichen Gespräch freue ich mich." (found: "${lastPara.slice(0, 50)}…")`);
   }
 
@@ -282,8 +297,9 @@ export async function validateAnschreiben(config) {
   });
 
   // ── 10. Narrativ — "es stellt dich nicht vor oder wie du arbeitest" ──────
+  // Bereich 2 eröffnet bewusst rein faktisch ([[feedback-anschreiben-p1-keine-begruendung]]).
   const firstPara = (paragraphs[0] ?? '').toLowerCase();
-  if (!HOW_SIGNALS.some((s) => firstPara.includes(s))) {
+  if (rules?.howSignal !== false && !HOW_SIGNALS.some((s) => firstPara.includes(s))) {
     errors.push(
       `Einleitung sagt nicht, WIE du arbeitest — nur WAS du bist oder worauf du dich bewirbst. ` +
       `(Recruiter: "es stellt dich nicht vor oder wie du arbeitest"). ` +
@@ -320,7 +336,7 @@ export async function validateAnschreiben(config) {
       `config.company.mission fehlt — was das Unternehmen konkret tut bzw. wofür es steht, in EIGENEN Worten. ` +
       `Ohne das bleibt der Brief ein Abgleich von Stellenprofil und Lebenslauf (Recruiter-Feedback Juli 2026).`
     );
-  } else {
+  } else if (rules?.missionInBrief !== false) {
     const missionToks = contentTokens(company.mission);
     const hits = missionToks.filter((t) => lowerText.includes(t));
     if (missionToks.length > 0 && hits.length < 2) {
@@ -391,25 +407,26 @@ if (isMain) {
     process.exit(1);
   }
 
-  const config = (await import(pathToFileURL(configPath).href)).default;
+  const config = resolveConfig((await import(pathToFileURL(configPath).href)).default);
   const { slug, anschreiben } = config;
   const paragraphs = anschreiben?.paragraphs ?? [];
   const fullText = paragraphs.join('\n');
+  const styleText = stripFixedTexts(fullText);
 
   console.log(`\n🔍 Validating Anschreiben: ${slug}`);
-  console.log(`   Paragraphs: ${paragraphs.length}  |  Subject: ${config.subject ?? '—'}\n`);
+  console.log(`   Paragraphs: ${paragraphs.length}  |  Subject: ${config.subject ?? '—'}`);
+  console.log(`   Profil: ${config._profile ? config._profile.label : '— (keins, Standardregeln)'}\n`);
 
   const { errors, warnings } = await validateAnschreiben(config);
 
-  const paraCount = paragraphs.length;
-  if (paraCount >= 4 && paraCount <= 5) console.log(`  ✓ Paragraph count: ${paraCount}`);
+  if (!warnings.some((w) => w.startsWith('Paragraph count'))) console.log(`  ✓ Paragraph count: ${paragraphs.length}`);
 
   const fuerSieCount = (fullText.match(FUER_SIE_REGEX) ?? []).length;
   console.log(`  ${fuerSieCount >= 2 ? '✗' : '✓'} "Für … heißt das:" ${fuerSieCount}× (max 1 erlaubt, 0 ist auch gut)`);
 
   // .match() statt .test() — die Muster tragen das g-Flag, test() würde lastIndex fortschreiben.
-  const tellHits = AI_TELLS.filter(({ re }) => fullText.match(re)).length;
-  console.log(`  ${tellHits === 0 ? '✓' : '✗'} AI-Tells: ${tellHits} Muster getroffen  |  Dreier-Aufzählungen: ${countTricolons(fullText)}`);
+  const tellHits = AI_TELLS.filter(({ re }) => styleText.match(re)).length;
+  console.log(`  ${tellHits === 0 ? '✓' : '✗'} AI-Tells: ${tellHits} Muster getroffen  |  Dreier-Aufzählungen: ${countTricolons(styleText)}`);
 
   if (!errors.some((e) => e.includes('compound-hyphen')) && !warnings.some((w) => w.includes('compound-hyphen'))) {
     console.log(`  ✓ No compound-hyphen words in body text`);
@@ -425,7 +442,11 @@ if (isMain) {
   console.log(`  ${config.company?.mission ? '✓' : '✗'} Unternehmensmission (config.company.mission)`);
   console.log(`  ${config.company?.verbindung ? '✓' : '✗'} Verbindung Narrativ ↔ Mission (config.company.verbindung)`);
   console.log(`  ${!errors.some((e) => e.includes('Kein konkretes Ergebnis')) ? '✓' : '✗'} Konkretes Ergebnis belegt`);
-  console.log(`  ${!errors.some((e) => e.includes('WIE du arbeitest')) ? '✓' : '✗'} Einleitung zeigt Arbeitsweise`);
+  if (config._profile?.howSignal === false) {
+    console.log(`  ○ Einleitung zeigt Arbeitsweise — für Profil ${config._profile.key} nicht verlangt (P1 faktisch)`);
+  } else {
+    console.log(`  ${!errors.some((e) => e.includes('WIE du arbeitest')) ? '✓' : '✗'} Einleitung zeigt Arbeitsweise`);
+  }
 
   const jobKeywords = Array.isArray(config.jobKeywords) ? config.jobKeywords : [];
   if (jobKeywords.length > 0) {

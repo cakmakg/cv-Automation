@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Werkstattgespräch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* ---------- Token-Ebene: vollständige Hellpalette auf blankem :root ---------- */
+:root{
+  --ground:#F1F0EB;
+  --surface:#FAFAF8;
+  --surface-2:#E9E8E1;
+  --ink:#14201C;
+  --ink-2:#5C6B65;
+  --ink-3:#8A968F;
+  --accent:#0B6B4F;
+  --accent-soft:#DCEAE3;
+  --signal:#B4471B;
+  --signal-soft:#F3E2D8;
+  --rule:#D7D6CE;
+  --rule-strong:#B9B8AE;
+  --shadow:0 1px 2px rgba(20,32,28,.06), 0 8px 24px -12px rgba(20,32,28,.18);
+
+  --f-ui:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-speech:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+
+  --step--1:.8125rem;
+  --step-0:1rem;
+  --step-1:1.1875rem;
+  --step-2:1.5rem;
+  --step-3:2rem;
+  --step-4:2.75rem;
+
+  --bar:56px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#111512;
+    --surface:#181E1A;
+    --surface-2:#212823;
+    --ink:#E6EAE5;
+    --ink-2:#98A49D;
+    --ink-3:#74807A;
+    --accent:#4CAD87;
+    --accent-soft:#16302592;
+    --signal:#E08757;
+    --signal-soft:#3A241A;
+    --rule:#28302B;
+    --rule-strong:#3A443D;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#111512;
+  --surface:#181E1A;
+  --surface-2:#212823;
+  --ink:#E6EAE5;
+  --ink-2:#98A49D;
+  --ink-3:#74807A;
+  --accent:#4CAD87;
+  --accent-soft:#16302592;
+  --signal:#E08757;
+  --signal-soft:#3A241A;
+  --rule:#28302B;
+  --rule-strong:#3A443D;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--f-ui);
+  font-size:var(--step-0);
+  line-height:1.55;
+  font-synthesis-weight:none;
+}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+
+/* ---------- Kopfleiste ---------- */
+.topbar{
+  position:fixed;inset:0 0 auto 0;height:var(--bar);z-index:50;
+  display:flex;align-items:center;gap:16px;
+  padding:0 clamp(14px,3vw,28px);
+  background:var(--ground);
+  border-bottom:1px solid var(--rule);
+}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand strong{font-weight:700;font-size:var(--step-0);letter-spacing:-.01em;white-space:nowrap}
+.brand span{
+  font-family:var(--f-mono);font-size:var(--step--1);color:var(--ink-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.act{
+  font-family:var(--f-mono);font-size:var(--step--1);font-weight:600;
+  color:var(--accent);text-transform:uppercase;letter-spacing:.08em;
+  white-space:nowrap;
+}
+.count{font-family:var(--f-mono);font-size:var(--step--1);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.btn{
+  font-family:var(--f-ui);font-size:var(--step--1);font-weight:600;
+  color:var(--ink);background:var(--surface);
+  border:1px solid var(--rule-strong);border-radius:3px;
+  padding:6px 12px;cursor:pointer;white-space:nowrap;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.progress{position:fixed;top:var(--bar);left:0;right:0;height:2px;background:var(--rule);z-index:20}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s ease}
+
+/* ---------- Bühne ---------- */
+.stage{
+  padding:calc(var(--bar) + 44px) clamp(18px,5vw,40px) 120px;
+  max-width:900px;margin:0 auto;
+}
+.slide{animation:rise .28s ease both}
+@keyframes rise{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.eyebrow{
+  font-family:var(--f-mono);font-size:var(--step--1);font-weight:600;
+  text-transform:uppercase;letter-spacing:.12em;color:var(--ink-3);
+  margin:0 0 10px;
+}
+.slide h2{
+  font-size:var(--step-3);font-weight:800;letter-spacing:-.025em;line-height:1.1;
+  margin:0 0 6px;text-wrap:balance;
+}
+.slide h2 + .lede{
+  font-family:var(--f-speech);font-size:var(--step-1);color:var(--ink-2);
+  margin:0 0 28px;max-width:60ch;
+}
+.slide h3{
+  font-size:var(--step-1);font-weight:700;letter-spacing:-.012em;
+  margin:32px 0 10px;text-wrap:balance;
+}
+.slide h3:first-of-type{margin-top:28px}
+.slide p{margin:0 0 14px;max-width:66ch}
+.slide > :last-child{margin-bottom:0}
+strong{font-weight:700}
+mark{background:var(--accent-soft);color:inherit;padding:.05em .25em;border-radius:2px}
+
+/* ---------- O-Ton: das, was du wirklich sagst ---------- */
+.oton{
+  position:relative;margin:18px 0 22px;
+  padding:20px 24px 20px 26px;
+  background:var(--surface);
+  border-left:3px solid var(--accent);
+  border-radius:0 4px 4px 0;
+  box-shadow:var(--shadow);
+}
+.oton::before{
+  content:"O-Ton";position:absolute;top:-9px;left:22px;
+  font-family:var(--f-mono);font-size:.6875rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.14em;
+  color:var(--accent);background:var(--ground);padding:0 8px;
+}
+.oton p{
+  font-family:var(--f-speech);font-size:var(--step-1);line-height:1.6;
+  margin:0 0 12px;max-width:62ch;
+}
+.oton p:last-child{margin-bottom:0}
+/* Die O-Ton-Marke sitzt auf der Oberkante — nach einem Hinweiskasten braucht sie Luft. */
+.note + .oton,.warn + .oton,.tablewrap + .oton{margin-top:30px}
+.oton.frage::before{content:"Deine Frage"}
+.oton.kern{border-left-color:var(--ink);background:var(--surface-2)}
+.oton.kern::before{content:"Kernsatz";color:var(--ink)}
+.oton.kern p{font-size:var(--step-2);line-height:1.45;font-weight:600}
+
+/* ---------- Hinweis / Warnung ---------- */
+.note,.warn{
+  display:flex;gap:12px;margin:18px 0;padding:14px 16px;border-radius:4px;
+  font-size:var(--step--1);line-height:1.55;
+}
+.note{background:var(--surface);border:1px solid var(--rule)}
+.warn{background:var(--signal-soft);border:1px solid var(--signal);color:var(--ink)}
+.note p,.warn p{margin:0;max-width:64ch}
+.note .tag,.warn .tag{
+  font-family:var(--f-mono);font-weight:600;font-size:.6875rem;
+  text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;padding-top:2px;
+}
+.note .tag{color:var(--accent)}
+.warn .tag{color:var(--signal)}
+
+/* ---------- Schrittfolgen ---------- */
+ol.steps{list-style:none;margin:16px 0 22px;padding:0;display:grid;gap:2px}
+ol.steps li{
+  display:grid;grid-template-columns:38px 1fr;gap:14px;align-items:baseline;
+  padding:9px 12px;background:var(--surface);border-bottom:1px solid var(--rule);
+}
+ol.steps li:first-child{border-radius:4px 4px 0 0}
+ol.steps li:last-child{border-bottom:0;border-radius:0 0 4px 4px}
+ol.steps li::before{
+  content:counter(s,decimal-leading-zero);counter-increment:s;
+  font-family:var(--f-mono);font-size:var(--step--1);font-weight:600;color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+ol.steps{counter-reset:s}
+
+/* ---------- Aufzählungen ---------- */
+ul.plain{margin:14px 0 20px;padding:0;list-style:none;display:grid;gap:8px}
+ul.plain li{display:grid;grid-template-columns:16px 1fr;gap:12px;align-items:baseline;max-width:66ch}
+ul.plain li::before{content:"";width:7px;height:7px;background:var(--accent);border-radius:50%;transform:translateY(-2px)}
+ul.check{margin:14px 0 20px;padding:0;list-style:none;display:grid;gap:6px}
+ul.check li{
+  display:grid;grid-template-columns:20px 1fr;gap:12px;align-items:baseline;
+  font-size:var(--step--1);
+}
+ul.check li::before{content:"☐";color:var(--ink-3);font-size:1.05em}
+
+/* ---------- Tabellen ---------- */
+.tablewrap{overflow-x:auto;margin:18px 0 22px;border:1px solid var(--rule);border-radius:4px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:440px;font-size:var(--step--1)}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{
+  font-family:var(--f-mono);font-size:.6875rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.1em;color:var(--ink-2);
+  background:var(--surface-2);white-space:nowrap;
+}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.ja{color:var(--accent);font-weight:600}
+td.nein{color:var(--signal);font-weight:600}
+
+/* ---------- Säulen / Kacheln ---------- */
+.pillars{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin:20px 0 24px}
+.pillar{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:18px 18px 20px;display:flex;flex-direction:column;gap:8px}
+.pillar b{font-size:var(--step-0);font-weight:700;letter-spacing:-.01em}
+.pillar span{font-size:var(--step--1);color:var(--ink-2)}
+.pillar em{
+  font-family:var(--f-mono);font-style:normal;font-size:.6875rem;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+}
+
+.split{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin:20px 0 24px}
+.split section{display:flex;flex-direction:column;gap:10px}
+.split h4{
+  margin:0;font-family:var(--f-mono);font-size:.6875rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.12em;
+}
+.split section.gut h4{color:var(--accent)}
+.split section.schlecht h4{color:var(--signal)}
+.split ul{margin:0;padding:0;list-style:none;display:grid;gap:7px;font-size:var(--step--1)}
+.split ul li{padding-left:18px;position:relative}
+.split section.gut li::before{content:"+";position:absolute;left:0;color:var(--accent);font-weight:700}
+.split section.schlecht li::before{content:"–";position:absolute;left:0;color:var(--signal);font-weight:700}
+
+/* ---------- Anteilsbalken ---------- */
+.ratio{margin:22px 0 8px;display:flex;height:46px;border-radius:4px;overflow:hidden;border:1px solid var(--rule-strong)}
+.ratio div{display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:var(--step--1);font-weight:600;padding:0 10px;text-align:center}
+.ratio .dev{flex:0 0 23%;background:var(--accent);color:#F4FBF8}
+.ratio .ops{flex:1;background:var(--surface-2);color:var(--ink)}
+.ratio-legend{display:flex;gap:22px;flex-wrap:wrap;font-size:var(--step--1);color:var(--ink-2);margin-bottom:24px}
+
+/* ---------- STAR-Karten ---------- */
+.stars{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin:20px 0 8px}
+.star{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.star .id{font-family:var(--f-mono);font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.star b{font-size:var(--step-0);font-weight:700;letter-spacing:-.01em}
+.star p{font-size:var(--step--1);color:var(--ink-2);margin:0;max-width:none}
+.star .fuer{font-size:.75rem;color:var(--ink-3);border-top:1px solid var(--rule);padding-top:8px;margin-top:4px}
+
+/* ---------- Fußleiste ---------- */
+.footbar{
+  position:fixed;inset:auto 0 0 0;z-index:20;
+  display:flex;align-items:center;gap:12px;
+  padding:12px clamp(14px,3vw,28px);
+  background:var(--ground);border-top:1px solid var(--rule);
+}
+.keys{font-family:var(--f-mono);font-size:.6875rem;color:var(--ink-3);letter-spacing:.03em}
+.keys kbd{
+  font-family:inherit;border:1px solid var(--rule-strong);border-radius:3px;
+  padding:1px 5px;margin:0 1px;color:var(--ink-2);
+}
+.nav{margin-left:auto;display:flex;gap:8px}
+
+/* ---------- Übersicht ---------- */
+.overview{
+  position:fixed;inset:0;z-index:40;background:var(--ground);
+  overflow-y:auto;padding:calc(var(--bar) + 32px) clamp(18px,5vw,40px) 60px;
+}
+.overview-inner{max-width:1000px;margin:0 auto}
+.overview h2{font-size:var(--step-2);font-weight:800;letter-spacing:-.02em;margin:0 0 24px}
+.ov-act{font-family:var(--f-mono);font-size:.6875rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:26px 0 10px}
+.ov-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.ov-item{
+  display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:baseline;
+  text-align:left;font-family:var(--f-ui);font-size:var(--step--1);
+  background:var(--surface);border:1px solid var(--rule);border-radius:4px;
+  padding:11px 13px;cursor:pointer;color:var(--ink);
+}
+.ov-item:hover{border-color:var(--accent)}
+.ov-item .n{font-family:var(--f-mono);font-weight:600;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ov-item[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.ov-item[aria-current="true"] .n{color:var(--accent)}
+
+/* ---------- Alles-Modus / Druck ---------- */
+body.alles .slide{display:block !important;border-bottom:1px solid var(--rule);padding-bottom:48px;margin-bottom:48px;animation:none}
+body.alles .slide:last-child{border-bottom:0}
+
+@media print{
+  .topbar,.footbar,.progress,.overview{display:none !important}
+  .stage{padding:0;max-width:none}
+  .slide{display:block !important;page-break-after:always;animation:none}
+  .oton{box-shadow:none}
+  body{background:#fff;color:#000}
+}
+
+@media (max-width:640px){
+  :root{--step-3:1.6rem;--step-4:2rem}
+  .brand span{display:none}
+  .keys{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <strong>Fahrrad XXL Feld</strong>
+    <span>Vorstellungsgespräch · IT Applikations- und Prozessmanager (m/w/d)</span>
+  </div>
+  <div class="topbar-right">
+    <span class="act" id="act">Rahmen</span>
+    <span class="count" id="count">01 / 21</span>
+    <button class="btn" id="btnOverview" type="button">Übersicht</button>
+    <button class="btn" id="btnAll" type="button">Alles</button>
+  </div>
+</header>
+<div class="progress"><i id="bar"></i></div>
+
+<main class="stage" id="stage">
+
+  <!-- 1 -->
+  <section class="slide" data-act="Rahmen">
+    <p class="eyebrow">Vorbereitung · Stand 3. September 2026</p>
+    <h2>Das Gespräch bei Fahrrad&nbsp;XXL Feld</h2>
+    <p class="lede">Familienbetrieb seit 1954, rund 200 Mitarbeitende, rund 40.000 Fahrräder. Einsteinstraße 35, Sankt Augustin — zwölf Kilometer von Bonn.</p>
+
+    <div class="note">
+      <span class="tag">Titel</span>
+      <p>Auf der eigenen Karriereseite heißt die Stelle <strong>IT Applikations- und Prozessmanager (m/w/d)</strong>. Der Fachinformatiker-Titel stammt aus der job24-Fassung, über die ich mich beworben habe. <strong>Im Gespräch die Bezeichnung des Hauses verwenden.</strong></p>
+    </div>
+
+    <div class="oton kern">
+      <p>Ich habe selbst einen Betrieb geführt und weiß, wo die Zeit verlorengeht. Und ich kann das Werkzeug, das dagegen hilft, selbst bauen.</p>
+    </div>
+
+    <div class="note">
+      <span class="tag">Regie</span>
+      <p>Diese Präsentation ist nach dem Gesprächsverlauf sortiert: erst der Rahmen, dann was ich sage, dann das fachliche Fundament, dann Plan und Belege, zum Schluss Fragen, Geld und Regieanweisungen. Mit <strong>← →</strong> durchklicken, <strong>Ü</strong> für die Übersicht.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>Bewertung</th><td>4,3 / 5 — beste inhaltliche Passung im gesamten Tracker</td></tr>
+        <tr><th>Stärkster Punkt</th><td>„Nachweisbare Erfahrung in der Entwicklung von KI-Anwendungen" steht wörtlich in der Anzeige</td></tr>
+        <tr><th>Größte Lücke</th><td>„Mehrjährige Berufserfahrung" im IT-Prozessmanagement</td></tr>
+        <tr><th>Größtes Risiko</th><td>Die Stelle ist <strong>befristet</strong>, die Dauer steht nicht in der Anzeige</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide" data-act="Rahmen" hidden>
+    <p class="eyebrow">Die wichtigste Korrektur</p>
+    <h2>Keine Entwicklerstelle</h2>
+    <p class="lede">Das ist die Stelle „Eigentümer des digitalen Betriebssystems dieses Hauses". Programmiert wird, aber nicht als Zweck der Arbeit.</p>
+
+    <div class="note">
+      <span class="tag">Bestätigt</span>
+      <p>Die Originalanzeige sagt es im Titel: <strong>IT Applikations- und Prozessmanager</strong>. Nicht Entwickler, nicht Fachinformatiker. Der Rollenzuschnitt ist damit keine Vermutung mehr, sondern die Selbstbeschreibung des Hauses.</p>
+    </div>
+
+    <div class="ratio">
+      <div class="dev">20–25 %<br>Entwicklung</div>
+      <div class="ops">75–80 % · Prozessanalyse · Applikationsbetrieb und Support · Lieferanten und Lizenzen · Dokumentation · Roadmap mit der Geschäftsführung</div>
+    </div>
+    <p class="ratio-legend"><span>Wer sich als Entwickler verkauft, der nebenbei Support macht, hat die Anzeige falsch gelesen.</span></p>
+
+    <h3>Die drei Säulen der Rolle</h3>
+    <div class="pillars">
+      <div class="pillar"><em>Säule 1</em><b>Prozesse verstehen</b><span>Verkauf, Service, Werkstatt, Logistik und Verwaltung analysieren und verschlanken.</span></div>
+      <div class="pillar"><em>Säule 2</em><b>Anwendungen betreiben</b><span>Kasse, Lager, Werkstatt und Warenwirtschaft laufen zuverlässig — inklusive gesetzlicher Pflichten.</span></div>
+      <div class="pillar"><em>Säule 3</em><b>Selbst entwickeln</b><span>Kleine Anwendung, Dashboard, Skript oder Automatisierung, wo Standardsoftware nicht reicht.</span></div>
+    </div>
+
+    <div class="note">
+      <span class="tag">Haltung</span>
+      <p>Ich positioniere mich als jemand, der die betrieblichen Abläufe versteht, die Systeme am Laufen hält <strong>und</strong> dort selbst entwickelt, wo es nichts Fertiges gibt. In dieser Reihenfolge.</p>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" data-act="Rahmen" hidden>
+    <p class="eyebrow">Gegenüber</p>
+    <h2>Peter Feld</h2>
+    <p class="lede">Gelernter Werkzeugmacher und Zweiradmechaniker. Hat den Betrieb 1990 von seinen Eltern übernommen, die ihn 1954 als „Zweirad Feld" in Sankt Augustin-Hangelar gegründet hatten.</p>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>1954</th><td>Gründung als Zweirad Feld, Sankt Augustin-Hangelar</td></tr>
+        <tr><th>1990</th><td>Übernahme durch Peter Feld</td></tr>
+        <tr><th>1997</th><td>Umzug nach Sankt Augustin-Menden, seitdem das größte Fahrradgeschäft NRWs</td></tr>
+        <tr><th>Heute</th><td>rund 200 Mitarbeitende · rund 40.000 Fahrräder · Verkauf, Werkstatt und Lager unter einem Dach · eigenes Café Velo · Shimano Service Center</td></tr>
+        <tr><th>Benefits</th><td>moderne Arbeitsplatzausstattung · Fahrradleasing dienstlich und privat · Personalrabatt · Café-Gutscheine · Weiterbildung</td></tr>
+        <tr><th>Führung</th><td>Peter Feld (alleinvertretungsberechtigt) und Catherine Feld</td></tr>
+      </table>
+    </div>
+
+    <h3>Was daraus folgt</h3>
+    <ul class="plain">
+      <li><strong>Kein Manager, sondern ein Handwerker</strong>, der einen Betrieb übernommen und groß gemacht hat. Er will hören, was etwas kostet, was es spart und wann es läuft.</li>
+      <li><strong>Meine Gründergeschichte ist hier kein Soft Skill, sondern die gemeinsame Sprache.</strong> Er hat einen Betrieb geführt, ich habe einen Betrieb geführt. Das sticht bei ihm mehr als bei jedem Personaler.</li>
+    </ul>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide" data-act="Rahmen" hidden>
+    <p class="eyebrow">Faktenkontrolle</p>
+    <h2>Was ich sage — und was ich frage</h2>
+    <p class="lede">Eine präzise Frage wirkt kompetenter als eine geratene Aussage. Alles Unsichere wird zur Frage.</p>
+
+    <div class="split">
+      <section class="gut">
+        <h4>Sicher belegt</h4>
+        <ul>
+          <li>Familienbetrieb seit 1954, Übernahme 1990</li>
+          <li>Größtes Fahrradgeschäft in NRW</li>
+          <li>Rund 200 Mitarbeitende und rund 40.000 Fahrräder — beides nennt die Anzeige selbst</li>
+          <li>Verkauf, Werkstatt, Lager, Café Velo an einem Ort</li>
+          <li>Shimano Service Center</li>
+          <li>Die Stelle ist befristet</li>
+        </ul>
+      </section>
+      <section class="schlecht">
+        <h4>Niemals behaupten</h4>
+        <ul>
+          <li>Welches ERP oder Kassensystem im Einsatz ist</li>
+          <li>Die Filialzahl oder das Verhältnis zum Fahrrad-XXL-Verbund</li>
+          <li>Dass Veloconnect genutzt wird</li>
+          <li>Wie hoch der Entwicklungsanteil tatsächlich ist</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="warn">
+      <span class="tag">Achtung</span>
+      <p>Zahlen nur aus der Anzeige selbst zitieren: rund 200 Mitarbeitende, rund 40.000 Räder. Alles andere — ERP, Filialzahl, Verbundstruktur — korrigiert er sofort, weil er es besser weiß.</p>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide" data-act="Was ich sage" hidden>
+    <p class="eyebrow">Roter Faden</p>
+    <h2>Die Kernbotschaft</h2>
+    <p class="lede">Ein Gedanke, den ich über das ganze Gespräch hinweg in verschiedenen Beispielen zeige — nie als Behauptung, immer als Beleg.</p>
+
+    <div class="oton">
+      <p>Ich bin nicht nur jemand, der Code schreibt. Ich verstehe, wie ein Betrieb im Alltag funktioniert. Ich sehe, wo Zeit verloren geht, wo doppelt erfasst wird und wo gewartet wird. Und ich kann das Problem zuerst über den Prozess lösen, und wenn nötig über Automatisierung oder eigene Software.</p>
+    </div>
+
+    <h3>Warum genau diese Kombination zählt</h3>
+    <div class="split">
+      <section class="gut">
+        <h4>Viele Entwickler</h4>
+        <ul><li>können bauen</li><li>kennen den realen Ladenbetrieb nicht</li></ul>
+      </section>
+      <section class="gut">
+        <h4>Viele Betriebsleute</h4>
+        <ul><li>kennen den Betrieb</li><li>können die Lösung technisch nicht selbst bauen</li></ul>
+      </section>
+    </div>
+    <p><mark>Beides zusammen ist die Stelle.</mark> Genau deshalb steht in der Anzeige sowohl Anwendungsentwicklung als auch IT-Support.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" data-act="Was ich sage" hidden>
+    <p class="eyebrow">Erste Frage · 60 bis 90 Sekunden</p>
+    <h2>„Erzählen Sie von sich"</h2>
+    <p class="lede">Die Reihenfolge ist Absicht: Betrieb → erkanntes Problem → IT-Fähigkeiten → Bezug zur Stelle. Nicht mit React, Node.js und KI anfangen.</p>
+
+    <div class="oton">
+      <p>Ich habe drei Jahre lang ein eigenes Café mit Cateringservice geführt. Dabei war ich unter anderem für Einkauf, Kasse, Personalplanung und die täglichen Abläufe verantwortlich.</p>
+      <p>In dieser Zeit habe ich gemerkt, wie viel Zeit durch Papier, doppelte Dateneingaben und fehlende Informationen verloren geht. Deshalb habe ich mich im IT-Bereich weitergebildet und mich auf Systemintegration und Anwendungsentwicklung konzentriert.</p>
+      <p>Heute entwickle ich Webanwendungen und Automatisierungen mit JavaScript beziehungsweise TypeScript, React, Next.js, Node.js und Workflow-Tools wie n8n. Außerdem habe ich KI-Anwendungen entwickelt, bei denen externe Schnittstellen, Freigabeschritte und nachvollziehbare Prozesse eine wichtige Rolle spielen.</p>
+      <p>An Ihrer Stelle finde ich besonders interessant, dass sie nicht nur Entwicklung, sondern auch Applikationsbetrieb und Prozessoptimierung verbindet. Ich kann die Abläufe im Verkauf, Service oder in der Werkstatt aus betrieblicher Sicht verstehen und bei Bedarf selbst eine technische Lösung dafür entwickeln.</p>
+    </div>
+
+    <div class="note">
+      <span class="tag">Wirkung</span>
+      <p>Der letzte Absatz beantwortet ungefragt die Frage, die er sich stellt: Versteht der überhaupt einen Laden?</p>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" data-act="Was ich sage" hidden>
+    <p class="eyebrow">Stärkste Karte</p>
+    <h2>Betriebsverständnis</h2>
+    <p class="lede">Das Café nicht als „ich hatte ein Café" erzählen, sondern als Liste von Verantwortungen. Jede einzelne hat eine Entsprechung im Fahrradhaus.</p>
+
+    <ul class="plain">
+      <li>Waren- und Produkteinkauf</li>
+      <li>Bestandskontrolle</li>
+      <li>Kasse und Tagesabschluss</li>
+      <li>Personal- und Schichtplanung</li>
+      <li>Catering-Aufträge neben dem laufenden Betrieb</li>
+      <li>direkter Kundenkontakt</li>
+      <li>Priorisierung in Stoßzeiten</li>
+      <li>Lieferanten- und Kostenkontrolle</li>
+      <li>schnelle Lösungen für operative Probleme</li>
+    </ul>
+
+    <div class="oton">
+      <p>Ich kenne nicht nur die technische Seite, sondern auch die operative Realität eines Geschäfts. Wenn eine Kasse ausfällt, ein Lieferant nicht rechtzeitig liefert oder mehrere Aufgaben gleichzeitig entstehen, muss man praktisch und schnell reagieren.</p>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide" data-act="Was ich sage" hidden>
+    <p class="eyebrow">Die eigentliche Prüfungsfrage</p>
+    <h2>Wie ich einen Prozess analysiere</h2>
+    <p class="lede">Gefragt ist nicht „welche Software kennst du", sondern „wie gehst du an einen Ablauf heran". Acht Schritte, frei erzählbar.</p>
+
+    <ol class="steps">
+      <li>Anfang und Ende des Prozesses festlegen</li>
+      <li>die beteiligten Personen bestimmen</li>
+      <li>den tatsächlichen Ablauf vor Ort beobachten</li>
+      <li>Doppelerfassung, Wartezeiten, Papier und überflüssige Freigaben erfassen</li>
+      <li>Daten sammeln: Dauer, Fehlerzahl, Vorgangsmenge</li>
+      <li>den Punkt mit dem höchsten Nutzen bei geringstem Aufwand wählen</li>
+      <li>einen kleinen Piloten umsetzen</li>
+      <li>Vorher und Nachher vergleichen</li>
+    </ol>
+
+    <div class="oton">
+      <p>Ich würde nicht sofort eine Softwarelösung vorschlagen. Zuerst würde ich den tatsächlichen Ablauf beobachten: Wer macht was, mit welchem System, an welcher Stelle entstehen Wartezeiten oder doppelte Eingaben? Danach würde ich die Verbesserungen nach Nutzen und Aufwand priorisieren und mit einem kleinen Pilotprozess beginnen.</p>
+    </div>
+
+    <div class="note">
+      <span class="tag">Wirkung</span>
+      <p>Das trennt mich von jedem Bewerber, der reflexhaft sagt, da könne man doch KI einsetzen.</p>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide" data-act="Was ich sage" hidden>
+    <p class="eyebrow">Anwender</p>
+    <h2>Symptom zuerst, Ursache danach</h2>
+    <p class="lede">Verkäufer, Werkstattmitarbeiter und Lagerkollegen sprechen nicht in technischen Begriffen. Meine Aufgabe ist nicht, ihnen Software zu erklären, sondern ihr Problem zu verstehen.</p>
+
+    <div class="oton">
+      <p>Ein Mitarbeiter sagt vielleicht nicht: „Die Schnittstelle zwischen zwei Systemen funktioniert nicht." Er sagt: „Der Bestand stimmt nicht." Deshalb muss man zuerst das Symptom verstehen und danach die technische Ursache analysieren.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>Er sagt</th><th>Gemeint sein kann</th></tr>
+        <tr><td>„Der Bestand stimmt nicht."</td><td>Abgleich zwischen Kasse und Warenwirtschaft läuft nicht durch</td></tr>
+        <tr><td>„Das Programm ist langsam."</td><td>Netzwerk, Datenbank, oder ein Bericht, der zu viel zieht</td></tr>
+        <tr><td>„Der Bon kommt nicht."</td><td>Drucker, Treiber — oder ein TSE-Thema</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide" data-act="Was ich sage" hidden>
+    <p class="eyebrow">Applikationsbetrieb</p>
+    <h2>Wenn die Kasse ausfällt</h2>
+    <p class="lede">Die Anzeige verlangt ausdrücklich, dass Kassen- und Lagersysteme stabil laufen. Neun Schritte, in dieser Reihenfolge.</p>
+
+    <ol class="steps">
+      <li>Auswirkung feststellen</li>
+      <li>betroffene Nutzer und Abteilungen ermitteln</li>
+      <li>Fehler reproduzieren</li>
+      <li>letzte Änderungen und Logs prüfen</li>
+      <li>wenn möglich eine Übergangslösung bereitstellen</li>
+      <li>Ursache analysieren</li>
+      <li>Lösung testen</li>
+      <li>Vorgang dokumentieren</li>
+      <li>dauerhafte Maßnahme gegen Wiederholung vorschlagen</li>
+    </ol>
+
+    <div class="oton">
+      <p>Wenn die Kasse ausfällt, würde ich nicht zuerst lange an einer perfekten Lösung arbeiten. Zuerst muss der Verkauf weitergehen. Ich würde die Auswirkung feststellen, eine sichere Übergangslösung organisieren, danach die Ursache analysieren und den Vorfall dokumentieren.</p>
+    </div>
+
+    <div class="note">
+      <span class="tag">Wirkung</span>
+      <p>Der Satz zeigt beides gleichzeitig: betriebswirtschaftliches Denken — der Umsatz läuft weiter — und technische Systematik.</p>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide" data-act="Fundament" hidden>
+    <p class="eyebrow">Nicht verhandelbar</p>
+    <h2>TSE, KassenSichV, GoBD</h2>
+    <p class="lede">Unter dem Satz „die Kassensysteme laufen stabil" steckt eine gesetzliche Pflicht, für die es keine Ausnahme gibt. Wer das benennt, hat die Verantwortung der Rolle verstanden.</p>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>TSE</th><td>Technische Sicherheitseinrichtung — jede Kasse braucht sie, jeder Vorgang wird unveränderbar signiert. Zertifikate haben eine Laufzeit.</td></tr>
+        <tr><th>KassenSichV</th><td>Kassensicherungsverordnung — regelt TSE-Pflicht, Belegausgabepflicht und die Meldepflicht der eingesetzten Kassen.</td></tr>
+        <tr><th>GoBD</th><td>Grundsätze ordnungsmäßiger Buchführung — Unveränderbarkeit, Nachvollziehbarkeit, Aufbewahrung und die Verfahrensdokumentation.</td></tr>
+      </table>
+    </div>
+
+    <p>Praktisch heißt das: Ein Kassenausfall ist nicht nur ein IT-Vorfall, sondern ein steuerlich dokumentationspflichtiger Vorgang. Und die <strong>Verfahrensdokumentation</strong> ist Pflicht, fehlt aber in vielen Betrieben.</p>
+
+    <div class="oton">
+      <p>Beim Thema Kasse geht es nicht nur um Verfügbarkeit, sondern auch um TSE und die Anforderungen aus KassenSichV und GoBD. Ausfälle und Änderungen müssen nachvollziehbar dokumentiert sein. Ich würde deshalb früh prüfen, ob es eine aktuelle Verfahrensdokumentation gibt und wie die TSE-Laufzeiten überwacht werden.</p>
+    </div>
+
+    <div class="warn">
+      <span class="tag">Ehrlich bleiben</span>
+      <p>Ich habe das nicht in einem Betrieb verantwortet. Deshalb als <strong>Prüfauftrag</strong> formulieren, nicht als Erfahrung. Genau so trägt es — und genau so kann es nicht auffliegen.</p>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide" data-act="Fundament" hidden>
+    <p class="eyebrow">Branchenwissen</p>
+    <h2>Veloconnect</h2>
+    <p class="lede">Die Anzeige sagt „API-Schnittstellen". Im Fahrradhandel heißt die entscheidende Schnittstelle Veloconnect. Dieses eine Wort trennt den, der die Anzeige gelesen hat, von dem, der die Branche recherchiert hat.</p>
+
+    <div class="pillars">
+      <div class="pillar"><em>Standard</em><b>Veloconnect</b><span>Verfügbarkeitsabfrage, Bestellung, Bestandsübermittlung. Über 120 Lieferanten angebunden, alle gängigen Branchen-ERPs unterstützen ihn. Version 1.4 brachte automatische Nachbestellung.</span></div>
+      <div class="pillar"><em>Warenwirtschaft</em><b>Branchenlösungen statt SAP</b><span>e-vendo, tricoma, VARIO, bikeoffice, HIW. Meist ein Paket aus Warenwirtschaft, Kasse, Werkstattverwaltung und Onlineshop.</span></div>
+    </div>
+
+    <div class="oton frage">
+      <p>Arbeiten Sie über Veloconnect mit den Lieferanten, oder läuft die Verfügbarkeitsabfrage bei Ihnen anders?</p>
+    </div>
+
+    <h3>Schmerzpunkte, die es in jedem großen Fahrradhaus gibt</h3>
+    <ul class="plain">
+      <li><strong>„Ist mein Rad fertig?"</strong> — jeder Anruf kostet Werkstattzeit. Eine automatische Statusnachricht ist ein Ein-Wochen-Projekt.</li>
+      <li><strong>Werkstattauslastung und Terminvergabe</strong> — als Shimano Service Center ist die Werkstatt ein Betrieb im Betrieb.</li>
+      <li><strong>Saisonalität</strong> — Frühjahr und Herbst sind Spitzen, Winter ist Flaute. Personalplanung und Lagerdisposition hängen daran. Genau hier bin ich mit der Café-Erfahrung anschlussfähig.</li>
+      <li><strong>Dienstrad-Leasing</strong> (JobRad, Bikeleasing, Eurorad) — viel Papier, viele Fristen, klassischer Automatisierungskandidat.</li>
+      <li><strong>Inventur</strong> in einem Haus dieser Größe.</li>
+    </ul>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide" data-act="Fundament" hidden>
+    <p class="eyebrow">Der heikelste Moment</p>
+    <h2>KI: kontrolliert statt überall</h2>
+    <p class="lede">„Nachweisbare Erfahrung in der Entwicklung von KI-Anwendungen" ist der Grund für die Einladung — und die Frage, bei der ich am leichtesten alles kaputt mache.</p>
+
+    <div class="oton kern">
+      <p>KI kann unterstützen, aber sie sollte nicht automatisch jede geschäftskritische Entscheidung treffen.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>Das System darf</th><th>Das System darf nicht</th></tr>
+        <tr><td class="ja">bei niedrigem Bestand einen Bestellvorschlag vorbereiten</td><td class="nein">selbstständig bestellen</td></tr>
+        <tr><td class="ja">eine Kundenantwort formulieren</td><td class="nein">heikle Beschwerden automatisch beantworten</td></tr>
+        <tr><td class="ja">einen Produkttext schreiben</td><td class="nein">ihn ohne Freigabe veröffentlichen</td></tr>
+      </table>
+    </div>
+
+    <div class="oton">
+      <p>Ich würde KI bei Ihnen nicht als erstes Projekt einsetzen. Zuerst würde ich die Prozesse verstehen. Für unkritische Aufgaben wie Produkttexte, interne Auswertungen oder vorbereitete Kundenantworten kann KI sinnvoll sein. Bei Bestellungen, Preisen oder Kundendaten würde ich immer Freigabepunkte und Protokollierung vorsehen.</p>
+    </div>
+
+    <div class="note">
+      <span class="tag">Wirkung</span>
+      <p>Ein Bewerber, der KI verkaufen will, ist verdächtig. Einer, der sagt „meistens braucht man sie gar nicht", ist glaubwürdig — und darf sie dann einsetzen, wenn er sie vorschlägt.</p>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide" data-act="Fundament" hidden>
+    <p class="eyebrow">Realismus</p>
+    <h2>Was in sechs Monaten geht — und was nicht</h2>
+    <p class="lede">Diese Einordnung zeigt, dass ich den Unterschied zwischen einem Demo-Effekt und einem produktiven System kenne.</p>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>Anwendungsfall</th><th>Aufwand bis produktiv</th><th>Datenbedarf</th></tr>
+        <tr><td>Produkttexte</td><td class="num">3 – 5 Tage</td><td class="ja">niedrig</td></tr>
+        <tr><td>Social-Media-Inhalte</td><td class="num">2 – 3 Tage</td><td class="ja">niedrig</td></tr>
+        <tr><td>Vorbereitete Kundenantworten</td><td class="num">rund 1 Woche</td><td class="ja">niedrig</td></tr>
+        <tr><td><strong>Bedarfsprognose</strong></td><td class="num">2 – 4 Wochen</td><td class="nein">hoch — mehrjährige saubere Verkaufsdaten</td></tr>
+      </table>
+    </div>
+
+    <p><mark>Die ersten drei sind Kandidaten für die ersten Monate. Die Bedarfsprognose ist es nicht</mark> — sie scheitert nicht an der Technik, sondern an der Datenqualität.</p>
+
+    <h3>Wenn er nach meinen eigenen KI-Anwendungen fragt</h3>
+    <div class="oton">
+      <p>Ich habe Anwendungen entwickelt, die Anfragen verarbeiten, Informationen über Schnittstellen abrufen, Angebote vorbereiten und Benachrichtigungen auslösen. Wichtig war dabei, dass kritische Aktionen nicht automatisch ausgeführt werden. Vor einer Buchung, Zahlung oder Änderung muss ein Mensch freigeben. Außerdem werden die einzelnen Schritte protokolliert.</p>
+      <p>Übertragen auf den Fahrradhandel könnte ein System beispielsweise Nachbestellungen oder Kundenantworten vorbereiten, aber die endgültige Entscheidung bleibt bei einem Mitarbeiter.</p>
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide" data-act="Plan &amp; Belege" hidden>
+    <p class="eyebrow">Die schwierige Frage</p>
+    <h2>„So lange sind Sie noch nicht in der IT"</h2>
+    <p class="lede">Die Anzeige verlangt mehrjährige Berufserfahrung im IT-Prozessmanagement, Applikationsbetrieb <strong>oder</strong> digitalen Projektmanagement. Dieses „oder" ist meine Munition.</p>
+
+    <div class="oton">
+      <p>Stimmt, in einer IT-Abteilung habe ich rund ein Jahr gearbeitet, dazu zwei Jahre Umschulung. Was ich länger gemacht habe, ist die andere Hälfte Ihrer Anforderung. Drei Jahre eigener Betrieb heißt: Warenwirtschaft, Kasse und Personalplanung haben nicht einem Kollegen gehört, sondern mir. Wenn die Kasse nicht zur Inventur passt, ruft man nicht den Support an, sondern findet den Fehler selbst. Und die Anwendungen, die ich seitdem baue, sind keine Übungsaufgaben. Sie laufen, sind getestet, und der Code ist öffentlich einsehbar.</p>
+    </div>
+
+    <p>Danach umdrehen, nicht in der Defensive bleiben:</p>
+
+    <div class="oton frage">
+      <p>Was mich ehrlich interessiert: Was war der Auslöser für die Stelle? Gab es ein konkretes Projekt, das liegengeblieben ist?</p>
+    </div>
+
+    <div class="note">
+      <span class="tag">Nicht tun</span>
+      <p>Nicht kleinreden, nicht wegdiskutieren, nicht entschuldigen. Umdeuten und weitergehen.</p>
+    </div>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide" data-act="Plan &amp; Belege" hidden>
+    <p class="eyebrow">„Wie würden Sie anfangen?"</p>
+    <h2>Die ersten 90 Tage</h2>
+    <p class="lede">Die Frage kommt, weil die Anzeige von einer digitalen Roadmap mit der Geschäftsführung spricht.</p>
+
+    <div class="oton">
+      <p><strong>Woche 1 bis 4 — zuhören und mitlaufen.</strong> Nicht im Büro, sondern an der Theke, in der Werkstatt und im Lager. Bei jedem Bereich einen halben Tag mitlaufen und aufschreiben, wo jemand etwas zweimal eintippt oder auf eine Rückmeldung wartet. Danach hätte ich eine Liste statt einer Meinung.</p>
+      <p><strong>Woche 5 bis 8 — ein sichtbares Ergebnis.</strong> Aus der Liste den Punkt nehmen, der wenig Aufwand kostet und täglich weh tut. Meist eine automatische Benachrichtigung oder eine Auswertung, die bisher jemand von Hand zusammenklickt. Etwas, das nach acht Wochen läuft, ist mehr wert als ein Konzept, das nach einem Jahr fertig ist.</p>
+      <p><strong>Woche 9 bis 12 — Bestand absichern und Roadmap.</strong> Dokumentieren, welche Systeme es gibt, wer sie betreut, wo Verträge und Lizenzen liegen und was bei einem Ausfall passiert. Dazu der Blick auf TSE-Laufzeiten und Verfahrensdokumentation. Erst danach die größeren Themen.</p>
+    </div>
+
+    <div class="note">
+      <span class="tag">Warum das trägt</span>
+      <p>Es sagt „ich baue nicht sofort drauflos", liefert trotzdem ein Ergebnis vor Ablauf der Probezeit — und der Dokumentationsteil beantwortet still die Sorge, was passiert, wenn der Ein-Personen-IT-Mann ausfällt.</p>
+    </div>
+  </section>
+
+  <!-- 17 -->
+  <section class="slide" data-act="Plan &amp; Belege" hidden>
+    <p class="eyebrow">Belege</p>
+    <h2>Vier Geschichten</h2>
+    <p class="lede">Mehr brauche ich nicht. Sie sind so gewählt, dass sie sich auf fast jede Frage biegen lassen.</p>
+
+    <div class="stars">
+      <article class="star">
+        <span class="id">A · Betrieb</span>
+        <b>Wo die Zeit verlorengeht</b>
+        <p>Café mit Cateringservice, drei Jahre. Einkauf, Kasse und Personalplanung in einer Hand. Bestellungen, Schichten und Abrechnung selbst strukturiert statt jede Woche improvisiert — der Betrieb lief planbar, auch bei parallelem Catering.</p>
+        <p class="fuer">Erfahrungslücke · Retail- und Werkstattprozesse · Belastbarkeit · „Warum IT?"</p>
+      </article>
+      <article class="star">
+        <span class="id">B · Support</span>
+        <b>Symptome und Ursachen</b>
+        <p>1st Level Support bei der GIS GmbH. Jeden Vorgang so dokumentiert, dass der Nächste sieht, was bereits geprüft wurde. Bei wiederkehrenden Fällen kurz erklärt statt nur repariert — weniger Rückfragen zum selben Thema.</p>
+        <p class="fuer">Systeme am Laufen halten · Anwender ohne IT-Hintergrund · Dokumentation</p>
+      </article>
+      <article class="star">
+        <span class="id">C · Technik</span>
+        <b>GuestMatrix</b>
+        <p>Plattform für mehrere Kunden. Die Trennung der Daten liegt in der Datenbank, nicht in der Anwendung; Eingaben werden an der Systemgrenze validiert, dazu eine Testsuite. Lauffähig, getestet, öffentlich einsehbar.</p>
+        <p class="fuer">„Was hast du gebaut?" · Datenschutz · Qualitätssicherung</p>
+      </article>
+      <article class="star">
+        <span class="id">D · Automatisierung</span>
+        <b>Der Mensch entscheidet</b>
+        <p>Systeme, die bis zur Buchung oder bis zur Sperrung einer Adresse alles vorbereiten — und dann anhalten. Feste Freigabepunkte, jeder Schritt protokolliert. Nachvollziehbar, wer was ausgelöst hat.</p>
+        <p class="fuer">Die KI-Frage · „Was, wenn das System Mist baut?" · Bestellautomatik</p>
+      </article>
+    </div>
+
+    <div class="warn">
+      <span class="tag">Regie</span>
+      <p>A und D nicht in derselben Verpackung erzählen. A ist die Betriebsgeschichte, D die Technikgeschichte. Beide mit „ich habe gemerkt, dass Zeit verloren geht" zu beginnen, klingt einstudiert.</p>
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section class="slide" data-act="Regie" hidden>
+    <p class="eyebrow">Meine Fragen</p>
+    <h2>Die erste ist Pflicht</h2>
+    <p class="lede">Die Fragen dienen nicht dem Interesse-Zeigen, sondern dem Verstehen des tatsächlichen Rollenumfangs.</p>
+
+    <div class="oton frage">
+      <p>Die Stelle ist in der Anzeige als befristet angegeben. Für welchen Zeitraum ist sie befristet, und woran würde sich eine Verlängerung oder Übernahme entscheiden?</p>
+    </div>
+
+    <div class="warn">
+      <span class="tag">Timing</span>
+      <p>Früh fragen, nicht am Schluss zwischen Tür und Angel. Die Befristungsdauer bestimmt das reale Risiko dieser Stelle.</p>
+    </div>
+
+    <ol class="steps">
+      <li>Wie verteilt sich die Arbeitszeit zwischen Applikationsbetrieb, Support, Prozessoptimierung und eigener Entwicklung?</li>
+      <li>Welche Warenwirtschafts-, Kassen- und Werkstattsysteme setzen Sie aktuell ein?</li>
+      <li>Wie ist die Anbindung an Lieferanten und Online-Shop gelöst? Arbeiten Sie mit Veloconnect?</li>
+      <li>Wäre ich allein verantwortlich, oder gibt es weitere IT-Kollegen beziehungsweise externe Dienstleister?</li>
+      <li>Was wäre das wichtigste Ergebnis, das Sie in den ersten drei bis sechs Monaten erwarten?</li>
+      <li>Welche Prozesse sind bisher liegen geblieben und sollen zuerst verbessert werden?</li>
+      <li>Woran würden Sie nach einem Jahr erkennen, dass die Stelle erfolgreich ist?</li>
+      <li>Gibt es bereits konkrete Projekte für Web-Apps, Dashboards oder Automatisierungs-Workflows?</li>
+      <li>Wer übernimmt kritische Aufgaben bei Krankheit oder Urlaub?</li>
+      <li>Ist die Position als Aufbau einer langfristigen internen Digitalisierungsfunktion gedacht?</li>
+    </ol>
+  </section>
+
+  <!-- 19 -->
+  <section class="slide" data-act="Regie" hidden>
+    <p class="eyebrow">Verhandlung</p>
+    <h2>Geld</h2>
+    <p class="lede">Kein Gehaltsband in der Anzeige. Die Marktdaten kippen meinen Korridor nicht — aber sie verteidigen die Untergrenze.</p>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>Median Deutschland, diese Rolle</th><td class="num">57.300 €</td></tr>
+        <tr><th>Bandbreite</th><td class="num">49.900 – 68.800 €</td></tr>
+        <tr><th>kununu-Durchschnitt (1.763 Einträge)</th><td class="num">66.600 €</td></tr>
+        <tr><th>Fachinformatiker AE in NRW, Durchschnitt</th><td class="num">rund 54.000 €</td></tr>
+        <tr><th>Mein Korridor</th><td class="num"><strong>42.000 – 48.000 €</strong> · Ziel 45.000 €</td></tr>
+      </table>
+    </div>
+
+    <p>Einzelhandel statt Softwarehaus, Familienbetrieb, befristet, rund ein Jahr IT-Praxis — das macht den Korridor realistisch. <mark>Alles unter 42.000 € liegt für diese Berufsbezeichnung aber deutlich unter dem Marktmedian</mark>, und das darf ich sagen.</p>
+
+    <div class="oton frage">
+      <p>Ich orientiere mich am Markt für die Position. Können Sie mir sagen, welchen Rahmen Sie für die Stelle vorgesehen haben?</p>
+    </div>
+    <div class="oton">
+      <p>Ich stelle mir 45.000 € vor. Das ist verhandelbar, sobald ich Ihre Systeme kenne.</p>
+      <p><em>Falls ein Angebot unter 42.000 € kommt:</em> Der Marktmedian für diese Rolle liegt deutschlandweit bei rund 57.000 €. Mir ist klar, dass Einzelhandel und Befristung das nach unten korrigieren — deshalb liege ich mit 45.000 € schon deutlich darunter.</p>
+    </div>
+
+    <h3>Die Förderzusage steht im Anschreiben, also kommt die Frage</h3>
+    <ul class="plain">
+      <li>Den <strong>Antrag stellt der Arbeitgeber</strong> bei der Agentur für Arbeit, nicht ich.</li>
+      <li>Der Antrag muss <strong>vor Beginn des Arbeitsverhältnisses</strong> gestellt sein.</li>
+      <li>Höhe und Dauer werden im Einzelfall festgelegt. „Bis zu" ist keine Zusage über die volle Höhe.</li>
+    </ul>
+
+    <div class="warn">
+      <span class="tag">Vorher erledigen</span>
+      <p>Arbeitsvermittlung anrufen und die Konditionen schriftlich holen. Ein Formular und ein Ansprechpartnername machen aus dem Argument einen echten Vorteil — „bis zu 50 Prozent" allein klingt vage.</p>
+    </div>
+  </section>
+
+  <!-- 20 -->
+  <section class="slide" data-act="Regie" hidden>
+    <p class="eyebrow">Verbotsliste</p>
+    <h2>Was ich nicht sage</h2>
+    <p class="lede">Jede Zeile hier hat schon einmal ein Gespräch gekostet.</p>
+
+    <div class="tablewrap">
+      <table>
+        <tr><th>Nicht sagen</th><th>Warum</th></tr>
+        <tr><td>„LangGraph", „RAG", „Vector Database", „Agenten" ohne Zweckangabe</td><td>Er ist Zweiradmechaniker. Fachbegriffe ohne Übersetzung lesen sich als Angeberei.</td></tr>
+        <tr><td>„Ich kann alles."</td><td>Unglaubwürdig.</td></tr>
+        <tr><td>„Jedes Problem löse ich mit KI."</td><td>Genau der Satz, den er von Beratern kennt.</td></tr>
+        <tr><td>„Ihre Systeme stelle ich schnell um."</td><td>Klingt nach Risiko, nicht nach Kompetenz.</td></tr>
+        <tr><td>„Wahrscheinlich nutzen Sie e-vendo."</td><td>Geraten. Fragen statt raten.</td></tr>
+        <tr><td>Eine erfundene Stückzahl</td><td>Die Anzeige nennt rund 40.000 Räder. Nur diese Zahl.</td></tr>
+        <tr><td>„Support interessiert mich weniger, ich will programmieren."</td><td>Disqualifiziert sofort — drei Viertel der Stelle sind genau das.</td></tr>
+        <tr><td>„Diese Prozesse sind veraltet, das müsste man neu aufsetzen."</td><td>Beleidigt 70 Jahre Betriebsgeschichte.</td></tr>
+        <tr><td>„Kenne ich nicht, aber ich lerne das" — ohne zu sagen, wie</td><td>Halbe Antwort. Immer den Einarbeitungsweg mitliefern.</td></tr>
+        <tr><td>„Ich bin Quereinsteiger."</td><td>Ich bin gelernter Fachinformatiker.</td></tr>
+        <tr><td>„Ich suche eine neue Herausforderung." · „Ihr Unternehmen ist innovativ."</td><td>Leerformeln.</td></tr>
+        <tr><td>„Ich habe mit Reporting-Tools gearbeitet."</td><td>Power BI, Tableau, Qlik sind nicht belegt. Dashboards selbst bauen: ja.</td></tr>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="tag">Ersatzsatz</span>
+      <p>Statt „kenne ich nicht": <strong>„Ihr konkretes System kenne ich noch nicht. Ich würde mich strukturiert einarbeiten und zuerst verstehen, welche Prozesse für den täglichen Betrieb kritisch sind."</strong></p>
+    </div>
+  </section>
+
+  <!-- 21 -->
+  <section class="slide" data-act="Regie" hidden>
+    <p class="eyebrow">Letzte Seite</p>
+    <h2>Vor dem Termin</h2>
+
+    <div class="split">
+      <section class="gut">
+        <h4>Technisch</h4>
+        <ul class="check" style="grid-column:1/-1">
+          <li>Ein GitHub-Projekt in drei Minuten erklären können</li>
+          <li>Datenfluss dieses Projekts aufzeichnen können</li>
+          <li>Wissen, welche APIs darin genutzt werden</li>
+          <li>Fehlerbehandlung und Sicherheitsentscheidungen erklären können</li>
+          <li>Menschliche Freigabe, Protokollierung, Rechtekontrolle erklären können</li>
+          <li>Skizze einer Dashboard-Idee auf Papier</li>
+          <li>Ablaufskizze „Werkstattauftrag → Kundenbenachrichtigung"</li>
+        </ul>
+      </section>
+      <section class="gut">
+        <h4>Betrieblich und organisatorisch</h4>
+        <ul class="check" style="grid-column:1/-1">
+          <li>Café-Geschichte: ein voller Tag, wie organisiert</li>
+          <li>Café-Geschichte: Bestands- oder Lieferproblem gelöst</li>
+          <li>Café-Geschichte: Schichtplanung organisiert</li>
+          <li>Café-Geschichte: einen Ablauf vereinfacht</li>
+          <li>Förderzusage-Konditionen schriftlich</li>
+          <li>Zeugnisse und Zertifikate ausgedruckt</li>
+          <li>Laptop oder Tablet geladen</li>
+          <li>Anfahrt Einsteinstraße 35, Sankt Augustin</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="note">
+      <span class="tag">Anrede</span>
+      <p>Die Anzeige duzt durchgehend, mein Anschreiben siezt. Im Gespräch das Duzen <strong>anbieten lassen</strong> und dann mitgehen. Nicht selbst anfangen, nicht beim Sie beharren.</p>
+    </div>
+
+    <div class="oton kern">
+      <p>Ich habe selbst einen Betrieb geführt und weiß, wo die Zeit verlorengeht. Und ich kann das Werkzeug, das dagegen hilft, selbst bauen. Diese Kombination ist selten, und deshalb passt die Stelle.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footbar">
+  <span class="keys"><kbd>←</kbd><kbd>→</kbd> blättern · <kbd>Ü</kbd> Übersicht · <kbd>A</kbd> alles · <kbd>P</kbd> drucken</span>
+  <div class="nav">
+    <button class="btn" id="prev" type="button">← Zurück</button>
+    <button class="btn" id="next" type="button">Weiter →</button>
+  </div>
+</footer>
+
+<div class="overview" id="overview" hidden>
+  <div class="overview-inner">
+    <h2>Übersicht</h2>
+    <p class="eyebrow" style="margin:-16px 0 4px">Abschnitt anklicken · <kbd style="font-family:inherit;border:1px solid var(--rule-strong);border-radius:3px;padding:1px 5px">Esc</kbd> schließt</p>
+    <div id="ovBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total  = slides.length;
+  var i = 0;
+
+  var elAct   = document.getElementById('act');
+  var elCount = document.getElementById('count');
+  var elBar   = document.getElementById('bar');
+  var overlay = document.getElementById('overview');
+  var ovBody  = document.getElementById('ovBody');
+  var body    = document.body;
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function show(n){
+    i = Math.max(0, Math.min(total - 1, n));
+    for (var k = 0; k < total; k++) slides[k].hidden = (k !== i);
+    elAct.textContent   = slides[i].getAttribute('data-act');
+    elCount.textContent = pad(i + 1) + ' / ' + pad(total);
+    elBar.style.width   = (((i + 1) / total) * 100) + '%';
+    window.scrollTo(0, 0);
+    markOverview();
+  }
+
+  function buildOverview(){
+    var currentAct = null, grid = null;
+    slides.forEach(function(s, idx){
+      var act = s.getAttribute('data-act');
+      if (act !== currentAct){
+        currentAct = act;
+        var h = document.createElement('p');
+        h.className = 'ov-act';
+        h.textContent = act;
+        ovBody.appendChild(h);
+        grid = document.createElement('div');
+        grid.className = 'ov-grid';
+        ovBody.appendChild(grid);
+      }
+      var h2 = s.querySelector('h2');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ov-item';
+      b.dataset.index = String(idx);
+      b.innerHTML = '<span class="n">' + pad(idx + 1) + '</span><span>' + (h2 ? h2.textContent : '') + '</span>';
+      b.addEventListener('click', function(){
+        show(parseInt(this.dataset.index, 10));
+        toggleOverview(false);
+      });
+      grid.appendChild(b);
+    });
+  }
+
+  function markOverview(){
+    var items = ovBody.querySelectorAll('.ov-item');
+    for (var k = 0; k < items.length; k++){
+      items[k].setAttribute('aria-current', String(parseInt(items[k].dataset.index, 10) === i));
+    }
+  }
+
+  function toggleOverview(force){
+    var open = (typeof force === 'boolean') ? force : overlay.hidden;
+    overlay.hidden = !open;
+  }
+
+  function toggleAll(){
+    body.classList.toggle('alles');
+    if (body.classList.contains('alles')){
+      for (var k = 0; k < total; k++) slides[k].hidden = false;
+      elCount.textContent = 'alle ' + total;
+      elAct.textContent = 'Gesamtansicht';
+      elBar.style.width = '100%';
+    } else {
+      show(i);
+    }
+  }
+
+  document.getElementById('next').addEventListener('click', function(){ show(i + 1); });
+  document.getElementById('prev').addEventListener('click', function(){ show(i - 1); });
+  document.getElementById('btnOverview').addEventListener('click', function(){ toggleOverview(); });
+  document.getElementById('btnAll').addEventListener('click', toggleAll);
+
+  document.addEventListener('keydown', function(e){
+    if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    var k = e.key.toLowerCase();
+    if (k === 'escape'){ toggleOverview(false); return; }
+    if (k === 'ü' || k === 'u'){ e.preventDefault(); toggleOverview(); return; }
+    if (k === 'a'){ e.preventDefault(); toggleAll(); return; }
+    if (k === 'p'){ e.preventDefault(); window.print(); return; }
+    if (body.classList.contains('alles') || !overlay.hidden) return;
+    if (k === 'arrowright' || k === ' ' || k === 'pagedown'){ e.preventDefault(); show(i + 1); }
+    else if (k === 'arrowleft' || k === 'pageup'){ e.preventDefault(); show(i - 1); }
+    else if (k === 'home'){ e.preventDefault(); show(0); }
+    else if (k === 'end'){ e.preventDefault(); show(total - 1); }
+  });
+
+  buildOverview();
+  show(0);
+})();
+</script>
+
+</body>
+</html>

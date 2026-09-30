@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probetag-Simulation — Fahrrad XXL Feld</title>
+<style>
+  :root{
+    --bg:#f6f5f2; --card:#fff; --ink:#1c1b19; --muted:#6b6862;
+    --line:#e2ded6; --accent:#8a2f26; --accent-soft:#f4e9e7;
+    --ok:#2f6b46; --ok-soft:#e8f1eb; --warn:#8a6a1f; --warn-soft:#f7efdc;
+    --bad:#8a2f26; --bad-soft:#f7e6e4; --de:#1f4d7a; --de-soft:#e9f0f7;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px 80px}
+
+  header.top{background:var(--ink);color:#f6f5f2;padding:26px 0 22px;margin-bottom:0}
+  header.top .wrap{padding-bottom:0}
+  header.top h1{margin:0 0 6px;font-size:26px;letter-spacing:-.3px}
+  header.top .role{color:#c9c4bb;font-size:14.5px;margin:0 0 12px}
+  header.top .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:#a9a49b}
+  header.top .meta b{color:#e8e4dc;font-weight:600}
+
+  nav.tabs{position:sticky;top:0;z-index:20;background:var(--bg);
+    border-bottom:1px solid var(--line);margin-bottom:26px}
+  nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;padding-top:8px;padding-bottom:0}
+  nav.tabs button{flex:0 0 auto;background:none;border:0;border-bottom:3px solid transparent;
+    padding:10px 14px;font:600 14px/1.2 inherit;color:var(--muted);cursor:pointer;white-space:nowrap}
+  nav.tabs button:hover{color:var(--ink)}
+  nav.tabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+  .panel{display:none}
+  .panel.active{display:block}
+
+  h2{font-size:21px;margin:34px 0 6px;letter-spacing:-.2px}
+  h2:first-child{margin-top:0}
+  .sub{color:var(--muted);font-size:14.5px;margin:0 0 20px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 20px;margin:0 0 14px}
+  .card h3{margin:0 0 8px;font-size:16.5px}
+  .card p{margin:0 0 10px}
+  .card p:last-child{margin-bottom:0}
+
+  .tag{display:inline-block;font:700 11px/1 inherit;letter-spacing:.6px;text-transform:uppercase;
+    padding:5px 8px;border-radius:5px;margin:0 8px 8px 0;vertical-align:middle}
+  .t-ok{background:var(--ok-soft);color:var(--ok)}
+  .t-warn{background:var(--warn-soft);color:var(--warn)}
+  .t-bad{background:var(--bad-soft);color:var(--bad)}
+  .t-time{background:var(--ink);color:#f6f5f2}
+  .t-prob{background:var(--accent-soft);color:var(--accent)}
+
+  blockquote{margin:12px 0;padding:12px 16px;background:var(--de-soft);
+    border-left:3px solid var(--de);border-radius:0 6px 6px 0}
+  blockquote{color:#12314d}
+  blockquote p{margin:0 0 8px}
+  blockquote p:last-child{margin:0}
+  blockquote em{color:#4a6c8c;font-style:normal;font-size:13px;display:block;margin-top:6px}
+
+  .qa{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+  .qa:first-of-type{border-top:0;padding-top:0;margin-top:0}
+  .q{font-weight:650;margin:0 0 4px}
+  .behind{color:var(--muted);font-size:14px;margin:0 0 10px}
+  .reveal{background:var(--accent);color:#fff;border:0;border-radius:6px;
+    padding:7px 13px;font:600 13px/1 inherit;cursor:pointer}
+  .reveal:hover{background:#6f251e}
+  .answer{display:none;margin-top:12px}
+  .answer.open{display:block}
+  .trap{background:var(--bad-soft);border-radius:6px;padding:10px 13px;font-size:14.5px;margin-top:10px}
+  .trap b{color:var(--bad)}
+
+  ol,ul{margin:8px 0 10px;padding-left:22px}
+  li{margin:4px 0}
+
+  pre{background:#232120;color:#f0ece4;border-radius:6px;padding:12px 14px;
+    overflow-x:auto;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin:10px 0}
+  pre .cm{color:#9aa79a}
+  code{background:#efece6;border-radius:4px;padding:1px 5px;
+    font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  pre code{background:none;padding:0;color:inherit;font-size:inherit}
+  .intake{background:#fbf8f1;border:1px dashed #d8cfb8;border-radius:8px;padding:14px 16px;margin:10px 0 14px}
+  .intake .hdr{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .intake .msg{font-style:italic}
+  .phase{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+  .phase h4{margin:0 0 4px;font-size:15.5px}
+  .phase .why{color:var(--muted);font-size:14px;margin:0 0 10px}
+  .step-no{display:inline-block;min-width:26px;height:26px;line-height:26px;text-align:center;
+    background:var(--ink);color:#f6f5f2;border-radius:50%;font:700 12px/26px inherit;margin-right:8px}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#efece6;font-size:13px;letter-spacing:.2px}
+
+  input[type=text],textarea{width:100%;border:1px solid var(--line);border-radius:5px;
+    padding:6px 8px;font:14px/1.4 inherit;background:#fdfcfa;color:var(--ink)}
+  textarea{resize:vertical;min-height:52px}
+  .chk{display:flex;gap:9px;align-items:flex-start;margin:7px 0}
+  .chk input{margin-top:5px;flex:0 0 auto;width:16px;height:16px;accent-color:var(--accent)}
+
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+  .toolbar button{background:#fff;border:1px solid var(--line);border-radius:6px;
+    padding:8px 13px;font:600 13px/1 inherit;color:var(--ink);cursor:pointer}
+  .toolbar button:hover{border-color:var(--accent);color:var(--accent)}
+
+  .banner{background:var(--warn-soft);border:1px solid #e3d3a8;border-radius:var(--radius);
+    padding:16px 20px;margin:0 0 24px}
+  .banner b{color:#6d5416}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  .scroll{overflow-x:auto}
+
+  footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);
+    margin-top:40px;padding-top:16px}
+
+  @media print{
+    body{background:#fff;font-size:11pt}
+    header.top,nav.tabs,.toolbar,.reveal,footer{display:none !important}
+    .panel{display:none !important}
+    body.print-mode #tab-feldbogen{display:block !important}
+    .card{border:1px solid #bbb;break-inside:avoid;page-break-inside:avoid}
+    textarea,input[type=text]{border:1px solid #999;background:#fff}
+    .wrap{max-width:none;padding:0}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <h1>Probetag-Simulation</h1>
+    <p class="role">Fahrrad XXL Feld GmbH &middot; Fachinformatiker Systemintegration/Anwendungsentwicklung im First-, Second- und Third-Level-Support (m/w/d)</p>
+    <div class="meta">
+      <span><b>Ort:</b> Einsteinstraße 35, 53757 Sankt Augustin</span>
+      <span><b>Kontakt:</b> Philipp Schneider &middot; 02241 9773-113</span>
+      <span><b>Vertrag:</b> Vollzeit, befristet</span>
+      <span><b>Stand:</b> 10.09.2026</span>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="wrap" id="tabbar"></div>
+</nav>
+
+<div class="wrap">
+
+  <section class="panel active" id="tab-analyse"></section>
+  <section class="panel" id="tab-ablauf"></section>
+  <section class="panel" id="tab-faelle"></section>
+  <section class="panel" id="tab-ticket"></section>
+  <section class="panel" id="tab-feldbogen"></section>
+  <section class="panel" id="tab-spick"></section>
+
+  <footer>
+    Kaynak: güncel Personio ilanı (10.09.2026) + <i>fahrrad-xxl-feld-anwendungsentwicklung.md</i> +
+    <i>fahrrad-xxl-feld-probetag-aufgaben.md</i> + kendi Probetag notlarım.
+    Notlar ve işaretler bu tarayıcıda yerel olarak saklanır.
+  </footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   İçerik verisi. Türkçe = açıklama/mantık, Almanca = söylenecek cümle.
+--------------------------------------------------------------- */
+
+const ANALYSE = [
+  {
+    tag:["t-bad","EN BÜYÜK SORUN"],
+    h:"Elindeki iki doküman eski rol tanımına göre yazılmış",
+    body:`<p>Her iki metin de <b>IT Applikations- und Prozessmanager</b> rolüne kalibre: Inventurdifferenz, Werkstattkapazität, Leasing-Portale, Veloconnect, PIM.
+    Aynı Personio ilanı bugün <b>First-, Second- und Third-Level-Support + Systemintegration</b> başlığında. Yani günün ağırlık merkezi Werkstatt süreç analizi değil,
+    <b>ticket, Windows Server, M365 ve kullanıcı desteği</b>.</p>
+    <p><b>Sonuç:</b> Süreç vakalarını atma, ama artık bonus bölümü onlar. Ana bölüm 3. sekmedeki destek vakaları.</p>`
+  },
+  {
+    tag:["t-bad","RİSKLİ TAVSİYE"],
+    h:"&raquo;Gerçek işe gönüllü olma, sadece izle&laquo; — IT Probetag'inde pasiflik olarak okunur",
+    body:`<p>Hukuki dayanak doğru: Einfühlungsverhältnis'te &raquo;selbstständig verwertbare Arbeitsleistung&laquo; beklenmez.
+    Ama IT destek gününde sana <b>kesinlikle gerçek ticket verilecek</b>, çünkü başka türlü seni değerlendiremezler.
+    Her şeye &raquo;Darf ich zuschauen?&laquo; diyen aday, ilgisiz görünür.</p>
+    <p><b>Doğru kural iki parçalı:</b> yanında biri varken <u>yap</u>; canlı sisteme (kasa, firewall, sunucu, kamera) <u>tek başına ve onaysız dokunma</u>.</p>
+    <blockquote><p>Ich mache das gerne mit, wenn du danebensitzt. Bevor ich in einem Produktivsystem etwas ändere, würde ich es aber kurz mit dir abstimmen.</p></blockquote>
+    <p class="behind">Ek bilgi: Probearbeit sırasında gesetzliche Unfallversicherung (DGUV) üzerinden &raquo;Wie-Beschäftigter&laquo; olarak sigortalısın. Ücret ödenmesi zorunlu değil.</p>`
+  },
+  {
+    tag:["t-warn","GÜNCELLENMELİ"],
+    h:"Buzzword yasağı mutlak değil — muhatabına göre değişir",
+    body:`<p>Merkzettel'in &raquo;LangGraph / RAG / Vector Search demeyeceksin&laquo; kuralı <b>Peter Feld</b> (Zweiradmechaniker, Geschäftsführer) için doğruydu.
+    Ama bu ilanın muhatabı IT tarafı ve ilanda kelimesi kelimesine <b>&raquo;Evaluation und Implementierung von KI-Lösungen&laquo;</b> yazıyor, araç listesinde de <b>Melibo</b> var.</p>
+    <p><b>Yeni kural:</b> Kendiliğinden teknik terim açma. <u>Soran kişi IT ise ve konuyu o açtıysa</u> teknik konuş — bu senin en güçlü kartın, kullanmadan gömme.</p>`
+  },
+  {
+    tag:["t-bad","KOMPLE EKSİK"],
+    h:"Systemintegration tarafı iki dokümanda da hiç yok",
+    body:`<p>İlanın yarısı bu ve dokümanlarda tek satır geçmiyor: AD / DNS / DHCP / GPO / Printserver / Fileserver, M365 + Entra + SharePoint, MDM Intune,
+    TeamViewer, Jira <i>ve</i> Zendesk, Fortigate + VPN, Veeam, Navision, Dahua kameralar, Zeiterfassung, Cycle, Jeegy.</p>
+    <p>Ayrıca iki hukuki hassas nokta hiç geçmiyor: kasada <b>TSE / KassenSichV / GoBD</b>, kamera ve zaman verisinde <b>DSGVO + Mitbestimmung</b>.
+    Bunları kendiliğinden dile getirmek, bu rolde tek başına bir güven işaretidir.</p>`
+  },
+  {
+    tag:["t-warn","DÜZELTİLMELİ"],
+    h:"Kendini tanıtma sırası bu rol için ters",
+    body:`<p>Elindeki metin kafeyle açılıyor. Süreç yöneticisi rolünde doğruydu. Destek rolünde ise karşındaki kişi önce
+    <b>&raquo;bu adam bir kullanıcıyı ayağa kaldırabilir mi&laquo;</b> sorusunun cevabını arıyor.</p>
+    <p><b>Yeni sıra:</b> Fachinformatiker (önce Systemintegration, sonra Anwendungsentwicklung) &rarr; 1st-Level destek pratiği &rarr; kendi geliştirdiğin sistemler &rarr; kafe, kısa bir cümleyle işletme sezgisi olarak.</p>`
+  },
+  {
+    tag:["t-ok","AYNEN KALSIN"],
+    h:"&raquo;Was sind die nervigsten 10 Minuten in deinem Arbeitstag?&laquo;",
+    body:`<p>Dokümanının en iyi tek satırı. Akşam kapanış sunumunun tüm içeriğini bu soru topluyor ve destek rolünde daha da iyi çalışıyor:
+    aldığın cevaplar aynı zamanda gelecekteki ticket'ların listesi. Devam soruları da doğru: &raquo;Und was machst du dann?&laquo; / &raquo;Wer merkt es, wenn das schiefgeht?&laquo;</p>`
+  },
+  {
+    tag:["t-ok","AYNEN KALSIN"],
+    h:"Kapanış sunumunun 5 adımı, özellikle 5. madde",
+    body:`<p>&raquo;Ne gördüm / en çok ne acıtıyor / hızlı kazanım / orta vade ama önce ölçerim / <b>bugün değerlendiremediğim şey</b>&laquo; yapısı sağlam.
+    Beşinci madde seni ayıran yer: bir günde her şeyi çözdüğünü iddia etmeyen aday inandırıcıdır.</p>`
+  },
+  {
+    tag:["t-ok","AYNEN KALSIN"],
+    h:"Bugün maaş konuşulmaz — ama sorarlarsa rakamın hazır olsun",
+    body:`<p>Probetag'de ücret/izin/mola sormak yersiz, doğru tespit. Ama <u>onlar</u> açarsa hazırlıksız yakalanma:
+    aralık + Förderzusage cümlesi hazır dursun (Report 080, Abschnitt 16). Befristung süresini sormak ise serbest, o rolün mahiyetiyle ilgili.</p>`
+  },
+  {
+    tag:["t-warn","GENİŞLETİLDİ"],
+    h:"Feldbogen'in sistem tablosu güncellendi",
+    body:`<p>Veloconnect/PIM/Marktplätze satırları kaldı ama ilanın gerçek araç listesi eklendi: Navision, Cycle, Jeegy, Melibo, Intune, Jira&ndash;Zendesk ayrımı, Veeam, Fortigate.
+    Yazdırılabilir hali 4. sekmede.</p>`
+  }
+];
+
+const ABLAUF = [
+  {
+    time:"08:30 – 09:00",
+    title:"Karşılama, tur, ilk yarım saat",
+    tests:"İlk izlenim, merak, tavır. Henüz hiçbir teknik şey ölçülmüyor.",
+    items:[
+      {
+        q:"&raquo;Erzähl doch nochmal kurz von dir.&laquo;",
+        behind:"Arkasındaki gerçek soru: bu adam bir kullanıcıyla konuşabilir mi, karmaşık şeyi sade anlatabiliyor mu?",
+        a:`<p><b>45 saniye, jargon yok, destek önce.</b> Kafe en sona ve tek cümle.</p>
+        <blockquote><p>Ich bin gelernter Fachinformatiker, zuerst Systemintegration, danach Anwendungsentwicklung. Im Support habe ich im ersten Level gearbeitet: Störungen aufnehmen, lösen oder sauber weitergeben.</p>
+        <p>Daneben baue ich Webanwendungen und automatisiere Abläufe, die vorher von Hand liefen. Davor hatte ich drei Jahre ein eigenes Café mit Catering, deswegen kenne ich auch die Seite, auf der die Kasse einfach laufen muss.</p>
+        <p>Heute bin ich vor allem hier, um zu sehen, wie bei euch der Alltag wirklich läuft.</p></blockquote>`,
+        trap:"Kafeyle açma. Bu rolde ilk cümle Fachinformatiker olmalı."
+      },
+      {
+        q:"&raquo;Warst du schon mal bei uns im Laden?&laquo;",
+        behind:"Dürüstlük testi. Aile şirketinde küçük yalan anında yakalanır.",
+        a:`<p>Gitmediysen: <i>&raquo;Nein, heute zum ersten Mal, deswegen bin ich gespannt.&laquo;</i> Gittiysen tek somut detay söyle, uydurma.</p>`,
+        trap:null
+      },
+      {
+        q:"&raquo;Und, was denkst du bisher?&laquo; (turdan hemen sonra)",
+        behind:"Tuzak. İlk 20 dakikada fikir beyan eden aday aceleci damgası yer.",
+        a:`<blockquote><p>Erst mal beeindruckend groß. Was mir auffällt, sind die vielen Übergabepunkte zwischen Verkauf, Werkstatt und Lager. Genau da würde ich heute gerne genauer hinschauen: wo eine Information von einem Bereich zum nächsten wandert.</p></blockquote>`,
+        trap:null
+      }
+    ]
+  },
+  {
+    time:"09:00 – 10:30",
+    title:"Ticketsystem'de mitlaufen (Jira / Zendesk)",
+    tests:"Günün en olası ana bölümü. Sorulan değil, senin sorduğun ölçülüyor. Ayrıca: dokümantasyon disiplini.",
+    items:[
+      {
+        q:"&raquo;Setz dich mal dazu — nimm du das Ticket.&laquo;",
+        behind:"Gerçek görev geldi. Test: yapıya sahip misin, yoksa rastgele mi tıklıyorsun?",
+        a:`<p><b>Sesli düşün, sırayla:</b></p>
+        <ol>
+          <li>Kim, ne zamandan beri, tek kişi mi herkes mi</li>
+          <li>Ne yapmaya çalışıyordu (semptomu değil hedefi sor)</li>
+          <li>Yeniden üretilebiliyor mu</li>
+          <li>Son değişiklik ne, log ne diyor</li>
+          <li><b>Ara çözüm</b> ver, çalışmaya devam etsin</li>
+          <li>Sebebi bul</li>
+          <li>Üç satır dokümante et: bildirilen / sebep / yapılan</li>
+        </ol>
+        <blockquote><p>Ich frage zuerst nicht &raquo;was ist kaputt&laquo;, sondern &raquo;was wolltest du gerade tun&laquo;. Anwender melden Symptome, nicht Ursachen.</p></blockquote>`,
+        trap:"Dokümantasyonu atlama. Yaptığın işten çok, yazdığın üç satır not ediliyor."
+      },
+      {
+        q:"&raquo;Warum haben wir eigentlich Jira und Zendesk?&laquo; / senin soracağın versiyonu",
+        behind:"Araç manzarasını anlıyor musun, yoksa sadece tıklıyor musun?",
+        a:`<p>Bu senin soracağın soru. Tipik ayrım: Zendesk dışarıya/kullanıcıya bakan destek kanalı, Jira içeride iş ve geliştirme takibi. Ama <b>varsayma, sor:</b></p>
+        <blockquote><p>Wo verläuft bei euch die Grenze zwischen Jira und Zendesk — was landet wo, und wer entscheidet das?</p></blockquote>`,
+        trap:null
+      },
+      {
+        q:"Uzaktan destek: TeamViewer ile başka bir alana bağlanmak",
+        behind:"Kullanıcıya saygı ve veri disiplini test ediliyor.",
+        a:`<ul>
+          <li>Devralmadan önce haber ver, ne yaptığını anlat</li>
+          <li>Özel pencerelerde gezinme</li>
+          <li>Oturumu düzgün kapat, sonunda değişikliği bir cümleyle özetle</li>
+        </ul>`,
+        trap:null
+      }
+    ]
+  },
+  {
+    time:"10:30 – 12:00",
+    title:"Arbeitsplatzaufbau / Benutzeranlage",
+    tests:"İlanda kelimesi kelimesine var. Sistematik çalışma ve yetki mantığı.",
+    items:[
+      {
+        q:"&raquo;Der neue Kollege fängt Montag an. Bau ihm den Platz auf.&laquo;",
+        behind:"Checklist mantığın var mı, son testi kullanıcı hesabıyla yapıyor musun?",
+        a:`<ol>
+          <li>Standart iş istasyonu neleri kapsıyor, image veya checklist var mı</li>
+          <li>Donanım kontrol, isimlendirme kuralına göre ad ver</li>
+          <li>Domain'e al, <b>doğru OU</b> — yoksa GPO'lar gelmez</li>
+          <li>Standart yazılım, yazıcı, Netzlaufwerk</li>
+          <li>M365 girişi, Outlook profili, gerekiyorsa Intune enrollment</li>
+          <li><b>Son test kullanıcı hesabıyla, admin hesabıyla değil</b></li>
+          <li>Envanter ve doküman güncelle</li>
+        </ol>
+        <blockquote><p>Gibt es hier eine Checkliste für den Standard-Arbeitsplatz? Wenn nicht, schreibe ich mit, was ich gemacht habe, dann habt ihr sie danach.</p></blockquote>`,
+        trap:null
+      },
+      {
+        q:"&raquo;Leg mal den neuen Mitarbeiter an.&laquo; (AD + Entra)",
+        behind:"Yetkiyi grup üzerinden mi veriyorsun, yoksa kullanıcıyı kopyalayıp geçiyor musun?",
+        a:`<p>AD kullanıcı &rarr; rol grupları &rarr; Entra'da M365 lisansı &rarr; posta kutusu ve dağıtım listesi &rarr; Fileserver + SharePoint &rarr; Zeiterfassung &rarr; parola güvenli kanaldan, ilk girişte değişsin.</p>
+        <blockquote><p>Ich kopiere ungern einen bestehenden Benutzer, weil man sich damit alte Rechte mit einkauft. Ich gehe lieber über die Rollengruppe.</p></blockquote>
+        <p><b>Offboarding sorulursa:</b> hesabı silme, devre dışı bırak; oturumları sonlandır; posta yönlendirme veya yöneticiye erişim; lisansı süre dolunca al; donanımı geri al; hepsini yaz.</p>`,
+        trap:null
+      }
+    ]
+  },
+  {
+    time:"12:00 – 13:00",
+    title:"Öğle arası — Café Velo",
+    tests:"Günün en dürüst değerlendirmesi burada yapılır. Aynı disiplin geçerli.",
+    items:[
+      {
+        q:"&raquo;Und, was hältst du von unserem System?&laquo; (bir kollege şikâyet ederken)",
+        behind:"Sadakat testi. Sistemi birileri seçti ve muhtemelen masadalar.",
+        a:`<blockquote><p>Dafür kenne ich es zu wenig. Was mir aufgefallen ist: An der Stelle X muss man dieselbe Info zweimal eingeben — ist das immer so, oder war das gerade ein Sonderfall?</p></blockquote>
+        <p>Şikâyeti gözlem sorusuna çevirdin: bilgi topladın, kimseyi arkadan vurmadın.</p>`,
+        trap:"Kimseye katılıp sistemi kötüleme. Kişi eleştirme, süreç tarif et."
+      },
+      {
+        q:"&raquo;Du kannst das ja bestimmt alles automatisieren, oder?&laquo;",
+        behind:"Yarı şaka, tam test: büyük konuşuyor mu?",
+        a:`<blockquote><p>Manches bestimmt. Aber wer automatisiert, bevor er den Ablauf verstanden hat, automatisiert meistens den Fehler mit. Deswegen frage ich heute erst mal viel und schlage nichts vor.</p></blockquote>`,
+        trap:null
+      }
+    ]
+  },
+  {
+    time:"13:00 – 14:00",
+    title:"Fläche: Verkauf, Werkstatt, Lager",
+    tests:"Gözlem kalitesi. Akşamki sunumun malzemesini burada topluyorsun.",
+    items:[
+      {
+        q:"Altın soru — her bölümde en az iki kişiye",
+        behind:"Tek soruyla hem ticket kaynaklarını hem süreç kayıplarını öğreniyorsun.",
+        a:`<blockquote><p>Was sind die nervigsten 10 Minuten in deinem Arbeitstag?</p>
+        <p>Und was machst du dann? &middot; Wer merkt es, wenn das schiefgeht?</p></blockquote>
+        <p><b>Bölüm bazlı:</b></p>
+        <ul>
+          <li><b>Werkstatt:</b> Wie kommt ein Auftrag rein, Papier oder System? Was passiert, wenn der Kunde anruft und fragt, ob sein Rad fertig ist?</li>
+          <li><b>Verkauf/Kasse:</b> Wie viele Programme brauchst du für einen normalen Verkauf? Was ist der häufigste Sonderfall?</li>
+          <li><b>Lager:</b> Wie kommt eine Lieferung ins System? Was macht ihr, wenn Lieferung und Bestellung nicht übereinstimmen?</li>
+        </ul>
+        <p>Duyduğun her şey Feldbogen'e (4. sekme) yazılır, telefona değil kâğıda.</p>`,
+        trap:null
+      }
+    ]
+  },
+  {
+    time:"14:00 – 15:00",
+    title:"Masa başı görev",
+    tests:"Analitik yaklaşım. Burada senin avantajın var — ama sıralamayı bozma.",
+    items:[
+      {
+        q:"CSV export, çift kayıt, küçük otomasyon veya KI sorusu",
+        behind:"Hemen çözüme mi atlıyorsun, önce süreci mi anlıyorsun?",
+        a:`<p>Değişmeyen sıran: <b>anla &rarr; ölç &rarr; önceliklendir &rarr; öner &rarr; nasıl ölçeceğini söyle</b>.
+        Detaylı vakalar 3. sekmede (F6&ndash;F10).</p>
+        <blockquote><p>Bevor ich etwas baue, würde ich prüfen, ob das Standardsystem das schon kann. Ein ungenutztes Modul schlägt jede Eigenentwicklung.</p></blockquote>`,
+        trap:"İlk gün yeni araç önerme. &raquo;Das mache ich mit n8n&laquo; demeden önce: nerede çalışır, kim işletir, veri nereye gider?"
+      }
+    ]
+  },
+  {
+    time:"15:00 – 16:00",
+    title:"Kapanış görüşmesi",
+    tests:"Günün asıl sınavı. Sentez ve dürüstlük.",
+    items:[
+      {
+        q:"&raquo;Und? Was hast du heute gesehen?&laquo;",
+        behind:"Bir günde neyi doğru okuduğun ve haddini bilip bilmediğin.",
+        a:`<p><b>Beş adım, üç dakika:</b></p>
+        <ol>
+          <li>Ne gördüm — 2-3 somut, nötr gözlem</li>
+          <li>En çok ne acıtıyor — bir tane, mümkünse sayıyla</li>
+          <li>Hızlı kazanım — birkaç günlük</li>
+          <li>Orta vade — ama &raquo;önce ölçerim&laquo; kaydıyla</li>
+          <li><b>Bugün değerlendiremediğim şey</b> — kime sormam, neye bakmam lazım</li>
+        </ol>
+        <blockquote><p>Drei Dinge sind mir aufgefallen. Am meisten weh tut aus meiner Sicht Punkt zwei, weil er jeden Tag mehrfach passiert. Kurzfristig würde ich dort ansetzen, das ist ein Aufwand von wenigen Tagen. Mittelfristig gibt es einen zweiten Punkt, aber den würde ich erst messen, bevor ich etwas verspreche. Was ich heute nicht beurteilen kann, ist X — dafür müsste ich mit dem Kollegen aus Y sprechen.</p></blockquote>`,
+        trap:null
+      },
+      {
+        q:"&raquo;Was würdest du in den ersten Wochen machen?&laquo;",
+        behind:"Tek kişilik IT riskini biliyor musun?",
+        a:`<p>1.&ndash;4. hafta: dinle, envanter çıkar, tekrar eden ticket'ları say.
+        5.&ndash;8. hafta: bir görünür sonuç.
+        9.&ndash;12. hafta: yedekleme/güvenlik kontrolü, <b>dokümantasyon</b> ve yol haritası.</p>
+        <p>Sonuna dokümantasyonu eklemek patronun en büyük sessiz korkusunun cevabıdır: &raquo;bu adam giderse bilgi de gider mi?&laquo;</p>`,
+        trap:null
+      },
+      {
+        q:"&raquo;Hast du noch Fragen?&laquo;",
+        behind:"Son izlenim. Buradaki sorular rolün gerçekliğini açar.",
+        a:`<ol>
+          <li>Navision mı Cycle mı artikel/stok için führendes System, ikisi nasıl senkron oluyor?</li>
+          <li>Günde kaç ticket geliyor, First/Second/Third nasıl bölünmüş?</li>
+          <li>Jira ve Zendesk arasındaki sınır nerede?</li>
+          <li>Sunucuları siz mi işletiyorsunuz, bir Dienstleister mi var?</li>
+          <li>IT ekibi kaç kişi, izinde kim devralıyor?</li>
+          <li>Melibo kullanımda mı, yoksa hâlâ değerlendirmede mi?</li>
+          <li><b>Befristung ne kadar, uzatma neye göre karar veriliyor?</b></li>
+          <li>Wann darf ich mit einer Rückmeldung rechnen?</li>
+        </ol>`,
+        trap:"Bugün maaş, izin, mola sorma. Sorarlarsa hazır rakamın olsun."
+      }
+    ]
+  }
+];
+
+const FAELLE = [
+  {
+    id:"F1", prob:"ÇOK OLASI", t:"&raquo;Der Drucker geht nicht.&laquo;",
+    behind:"Klasik 1st-Level. Ölçülen: sistematik ve kullanıcıyla ton.",
+    a:`<p>Sıra: hangi yazıcı ve hangi belge &rarr; tek kişi mi herkes mi &rarr; kuyruk/Spooler &rarr; doğru varsayılan yazıcı mı &rarr; sürücü / Printserver paylaşımı &rarr; ağ ve bağlantı.</p>
+    <p>Ara çözüm her zaman var: başka bir yazıcıya yönlendir, kollege çalışmaya devam etsin.</p>
+    <blockquote><p>Damit du weiterarbeiten kannst, lege ich dir kurz den Drucker nebenan als Standard drauf. Die eigentliche Ursache schaue ich mir danach an.</p></blockquote>`
+  },
+  {
+    id:"F2", prob:"OLASI", t:"&raquo;Die Kasse hängt.&laquo;",
+    behind:"Aynı anda hem teknik hem hukuki refleks test ediliyor.",
+    a:`<p>Önce iş etkisi: satış duruyor mu, kart terminali çalışıyor mu, alternatif kasa var mı. Sonra: ağ &rarr; sunucu servisi &rarr; fiş yazıcısı &rarr; terminal &rarr; veritabanı kilidi.</p>
+    <div class="trap"><b>Kırmızı çizgi:</b> Kasada deneme yapılmaz. TSE, KassenSichV ve GoBD kapsamında kayıtlar değiştirilemez ve kesintiler belgelenmelidir.</div>
+    <blockquote><p>An der Kasse würde ich nichts ausprobieren. Ich sichere erst den Zustand, sorge dafür, dass weiter verkauft werden kann, und dokumentiere die Störung — wegen TSE und GoBD muss so etwas nachvollziehbar bleiben.</p></blockquote>`
+  },
+  {
+    id:"F3", prob:"ÇOK OLASI", t:"Neuer Mitarbeiter: AD, Entra, Rechte",
+    behind:"Yetki mimarisi anlayışı.",
+    a:`<p>Kullanıcı &rarr; rol grubu &rarr; lisans &rarr; posta &rarr; dosya ve SharePoint &rarr; Zeiterfassung &rarr; ilk girişte parola değişimi.
+    Yetki daima grup üzerinden. Mevcut kullanıcıyı kopyalamak eski hakları taşır.</p>
+    <p><b>Freigabe- ve NTFS-Rechte birlikte çalışır, kısıtlayıcı olan kazanır</b> — bu cümle tek başına seviyeni gösterir.</p>`
+  },
+  {
+    id:"F4", prob:"ORTA", t:"Offboarding: &raquo;Der Kollege hört Ende des Monats auf.&laquo;",
+    behind:"Silmek yerine devre dışı bırakmayı biliyor musun?",
+    a:`<p>Hesabı devre dışı bırak (silme), oturumları sonlandır, posta kutusunu yöneticiye aç veya yönlendir, lisansı saklama süresi dolunca çek,
+    donanım ve anahtarları geri al, VPN/TeamViewer erişimini kapat, her adımı yaz.</p>
+    <blockquote><p>Ich lösche das Konto nicht sofort — sonst sind Postfach und Berechtigungshistorie weg. Ich deaktiviere es, sperre die Anmeldung und gebe das Postfach der Führungskraft frei.</p></blockquote>`
+  },
+  {
+    id:"F5", prob:"OLASI", t:"&raquo;Outlook fragt dauernd nach dem Passwort.&laquo;",
+    behind:"M365 tarafında ne kadar rahatsın? Burada dürüstlük şart.",
+    a:`<p>Kontrol sırası: parola değişti mi &rarr; önbelleğe alınmış kimlik bilgileri (Anmeldeinformationsverwaltung) &rarr; MFA kaydı veya cihaz kaydı &rarr; lisans süresi &rarr; Outlook profili yeniden oluşturma.</p>
+    <div class="trap"><b>Aşırı iddia etme:</b> M365/Entra/Intune'u canlı işletmede yönetmedin. &raquo;Aus der Umschulung und eigenen Umgebungen kenne ich das, im laufenden Betrieb habe ich es noch nicht verantwortet. Ich frage lieber einmal, bevor ich in einer Produktivumgebung klicke.&laquo;</div>`
+  },
+  {
+    id:"F6", prob:"ORTA", t:"&raquo;Unsere Inventur weicht ab. Wie würdest du rangehen?&laquo;",
+    behind:"Eski dokümanından gelen vaka — hâlâ geçerli, ama artık arayüz sorusu olarak.",
+    a:`<ol>
+      <li><b>Farkı lokalize et:</b> hangi ürün grubu, hangi lokasyon, hangi zaman dilimi</li>
+      <li><b>Kaynağı ayır:</b> hata çoğu zaman sayım gününde değil, öncesinde oluşur — eksik kaydedilmiş mal girişi, geciken Umlagerung, yanlış atanmış iade, izlenemeyen manuel stok düzeltmesi</li>
+      <li><b>Sistematik mi tekil mi:</b> aynı kalemler her yıl çıkıyorsa bu sayım sorunu değil süreç sorunudur</li>
+      <li><b>Ölçülebilir önlem:</b> barkod okutma, mal girişinin siparişe karşı kontrolü, permanente Inventur, her düzeltmenin dokümantasyonu</li>
+    </ol>
+    <p><b>Bu rolde ek soru senin farkın:</b> Navision ve Cycle arasında stok nasıl senkron oluyor, senkron hatası da farkı üretebilir.</p>
+    <blockquote><p>Ich würde nicht mit der Frage &raquo;wer war es&laquo; anfangen, sondern mit &raquo;wo genau&laquo;. Meistens entsteht der Fehler nicht am Zähltag, sondern vorher bei Wareneingängen, Umlagerungen oder Retouren. Und wenn zwei Systeme denselben Bestand führen, schaue ich mir zuerst die Schnittstelle an.</p></blockquote>
+    <p class="behind">Nüans: pozitif fark (sistemde olandan fazla mal) genelde çift kaydedilmiş mal girişi veya yanlış kaydedilmiş satıştır. Bunu söylemek konuyu bildiğini gösterir.</p>`
+  },
+  {
+    id:"F7", prob:"DÜŞÜK-ORTA", t:"&raquo;Im Frühjahr ist die Werkstatt drei Wochen ausgebucht.&laquo;",
+    behind:"Kapasite mi planlama mı ayrımını yapabiliyor musun?",
+    a:`<blockquote><p>Zuerst würde ich wissen wollen, ob wirklich Kapazität fehlt oder ob Zeit im Ablauf verloren geht. Dafür brauche ich drei Zahlen: durchschnittliche Bearbeitungszeit pro Auftragstyp, wie viele Termine nicht wahrgenommen werden, und wie sich Sofort- und Terminarbeiten verteilen. Wenn jeder dritte Auftrag länger dauert, weil ein Teil fehlt, ist das kein Werkstattproblem, sondern ein Ersatzteilproblem.</p></blockquote>
+    <p>Hızlı kazanım: otomatik durum bildirimi. Gerekçesi teknik değil insani — her telefon bir teknisyeni işinden koparır.</p>`
+  },
+  {
+    id:"F8", prob:"ORTA", t:"&raquo;Hier ist ein Export. Was siehst du?&laquo;",
+    behind:"Veriyle çalışırken önce soru mu soruyorsun, yoksa formül mü yazıyorsun?",
+    a:`<p><b>Önce üç soru:</b> Bu veri hangi dönemi kapsıyor? Hangi sistemden geldi? İptaller ve iadeler içinde mi?</p>
+    <ol>
+      <li>Temizle (tarih, sayı formatı, boş satır) ve <b>kaç satır olduğunu söyle</b></li>
+      <li>Bir pivotla en büyük kırılımı bul</li>
+      <li><b>Bir tane</b> anlamlı bulgu seç, on tane değil</li>
+      <li>Bulguyu tek cümlelik aksiyona bağla</li>
+      <li>Ne bilmediğini söyle</li>
+    </ol>
+    <p>Dosya disiplini: ayrı sekmeler (Rohdaten / Berechnung / Ergebnis), hardcode yok, üstte &raquo;Annahmen&laquo; kutusu. Kimse söylemez ama bakan görür.</p>
+    <blockquote><p>Was ich hier sehe, ist ein Hinweis, keine Antwort. Um sicher zu sein, müsste ich wissen, ob Stornos in den Daten enthalten sind.</p></blockquote>`
+  },
+  {
+    id:"F9", prob:"OLASI", t:"&raquo;Wo würdest du bei uns KI einsetzen?&laquo; (+ Melibo)",
+    behind:"İlanda &raquo;Evaluation und Implementierung von KI-Lösungen&laquo; yazıyor, araç listesinde Melibo var. Bu soru gelecek.",
+    a:`<p><b>Üç katman:</b> önce frenle, sonra küçük ve somut bir örnek, sonra ilke.</p>
+    <blockquote><p>Ich würde bei euch nicht mit KI anfangen, sondern mit der Frage, wo dieselbe Arbeit mehrfach passiert.</p>
+    <p>Wenn es um Melibo geht: Der Erfolg so eines Systems hängt weniger am Modell als an der Wissensbasis. Wenn Öffnungszeiten, Liefer- und Reparaturauskünfte dort veralten, antwortet es zuverlässig falsch. Ich würde deshalb zuerst klären, wer die Inhalte pflegt und in welchem Rhythmus — und eine feste Übergabe an einen Menschen einbauen, sobald es um Termine, Preise oder Reklamationen geht.</p>
+    <p>Das System darf vorbereiten, aber nicht entscheiden.</p></blockquote>
+    <p class="behind">Melibo = Alman, DSGVO uyumlu customer-service otomasyon platformu; KI-Chatbot + Live-Chat + ticket otomasyonu, içinde &raquo;Knowledge Hub&laquo; adında bilgi tabanı. Yani senin RAG + insan onayı mimarinin hazır ürün hali. Karşındaki IT'ciyse ve konuyu o açtıysa teknik konuşabilirsin.</p>`
+  },
+  {
+    id:"F10", prob:"ORTA", t:"&raquo;Wir pflegen das hier zweimal. Wie würdest du das lösen?&laquo;",
+    behind:"Senin asıl alanın. Test: hemen kod mu yazıyorsun?",
+    a:`<ol>
+      <li><b>Süreç:</b> kim yapıyor, günde kaç kez, kaç dakika, yapılmazsa ne olur</li>
+      <li><b>Standart sistem:</b> Navision veya Cycle bunu zaten yapabiliyor mu, kullanılmayan bir modül var mı</li>
+      <li><b>Sonra bina et,</b> mümkün olan en küçüğüyle</li>
+      <li><b>Ölç:</b> vorher/nachher, işlem başına dakika &times; haftalık işlem sayısı</li>
+    </ol>
+    <div class="trap"><b>Tuzak:</b> İlk gün araç önerme. n8n diyeceksen önce sor: nerede çalışır, kim işletir, veri nereden nereye gider, Fortigate arkasında mı duracak?</div>`
+  },
+  {
+    id:"F11", prob:"ORTA", t:"Bilgi sorusu: Fortigate, VPN, Veeam",
+    behind:"İlk gün konfigürasyon yaptırmazlar; kavramı test ederler.",
+    a:`<p>VPN: iki ağı veya bir kullanıcıyı şifreli bir tünelle iç ağa bağlar. Firewall kuralı neyin geçeceğine karar verir, NAT adres çevirir — ikisi farklı iştir.</p>
+    <blockquote><p>Ein Backup ist erst dann ein Backup, wenn eine Rückspielung getestet wurde. Sonst ist es eine Hoffnung.</p></blockquote>
+    <p>3-2-1 kuralını söyle ve sor: Werden die Veeam-Restores regelmäßig getestet?</p>
+    <div class="trap">Konsolu önüne koyarlarsa: <i>&raquo;Bevor ich hier eine Regel ändere, würde ich gerne wissen, ob es einen Änderungsprozess gibt und ob wir einen Zeitpunkt außerhalb der Öffnungszeiten wählen sollten.&laquo;</i></div>`
+  },
+  {
+    id:"F12", prob:"DÜŞÜK-ORTA", t:"Dahua kameralar ve Zeiterfassung",
+    behind:"Burada teknik cevap değil, hukuki refleks puan getirir.",
+    a:`<p>Kamera görüntüsü ve zaman verisi kişisel veridir; işçi temsilciliği/Mitbestimmung konusudur.</p>
+    <blockquote><p>Aufnahmen schaue ich mir nur an, wenn es dafür einen Anlass und eine Freigabe gibt. Bei Zeitdaten genauso: Korrekturen gehören dokumentiert, damit später nachvollziehbar bleibt, wer was geändert hat.</p></blockquote>`
+  }
+];
+
+const SPICK = {
+  befehle:[
+    ["ipconfig /all","IP, DNS, DHCP, MAC — her ağ arızasının ilk adımı"],
+    ["ipconfig /flushdns","DNS önbelleğini temizler"],
+    ["nslookup <name>","İsim çözümlemesi doğru sunucudan mı geliyor"],
+    ["ping / tracert","Erişilebilirlik ve yol"],
+    ["gpupdate /force","Grup ilkelerini yeniden çeker"],
+    ["gpresult /r","Hangi GPO gerçekten uygulanmış"],
+    ["net use","Bağlı ağ sürücüleri"],
+    ["Ereignisanzeige / Dienste","Sunucu ve istemci tarafında ilk kanıt kaynağı"]
+  ],
+  niemals:[
+    "&raquo;Das ist ja veraltet&laquo;",
+    "&raquo;Bei euch könnte man mal KI einsetzen&laquo;",
+    "&raquo;Ich bin Quereinsteiger&laquo;",
+    "Bir kolleg'i veya bir kişiyi eleştirmek",
+    "Bugün maaş, izin, mola konuşmak",
+    "Kendiliğinden LangGraph / RAG / Vector Search açmak (IT'ci sorarsa serbest)",
+    "Kasa, firewall, sunucu veya kamerada onaysız değişiklik",
+    "Bilmediğin bir sistem hakkında kesin konuşmak (Cycle, Jeegy)"
+  ],
+  immer:[
+    "Süreci eleştir, kişiyi asla",
+    "Önce sor, sonra öner",
+    "&raquo;Das weiß ich nicht, das würde ich prüfen&laquo; güçlü bir cevaptır",
+    "Notlar kâğıda, telefona değil",
+    "Her işi üç satır dokümanla kapat: bildirilen / sebep / yapılan",
+    "Satıştaki kollege önce ara çözüm alır",
+    "Sesli düşün — ne bildiğini değil, ne söylediğini görüyorlar"
+  ],
+  mitnehmen:[
+    "Notizblock + Stift (görünür şekilde not al)",
+    "Bu Feldbogen'in çıktısı",
+    "Kimlik (ziyaretçi girişi)",
+    "Laptop dolu — sormadan açma",
+    "Zeugnisse ve sertifikalar kâğıt olarak",
+    "Förderzusage belgesi (sözleşme konusu açılırsa)",
+    "Su, erken çıkış — Einsteinstraße 35, Bonn'dan ~12 km",
+    "Kıyafet: temiz ve pratik, takım elbise değil (masa altına gireceksin)"
+  ],
+  ehrlich:[
+    ["M365 / Entra / SharePoint / Intune canlı işletme","&raquo;Aus der Umschulung und aus eigenen Umgebungen kenne ich das, im laufenden Betrieb habe ich es noch nicht verantwortet.&laquo;"],
+    ["Python","Stack Node.js ve TypeScript. Python sadece KI projelerinde LangGraph üzerinden, temel düzey."],
+    ["Fortigate / Veeam / Navision","&raquo;Das Prinzip ist mir klar, das Produkt kenne ich noch nicht.&laquo;"],
+    ["Cycle / Jeegy / kasa manzarası","İddia değil soru: hangisi führendes System?"]
+  ]
+};
+
+const TICKETS = [
+{
+  id:"T1", badge:"Störung · Prio 2",
+  title:"Kasse 2 druckt nicht",
+  lead:"Perakendede en tipik ve iş etkisi en yüksek vaka. Üç katmanı birden gösterir: kullanıcı, ağ, sunucu. Ayrıca kasadaki hukuki refleksi.",
+  intake:{hdr:"Zendesk #4711 &middot; Eingang 08:12 &middot; Von: Melanie K. (Verkauf)",
+    betreff:"Kasse 2 druckt nicht",
+    msg:"Guten Morgen, die Kasse 2 druckt keine Bons mehr. Wir haben schon neu gestartet, hilft nichts. Die ersten Kunden stehen schon an. Bitte dringend!"},
+  note:"Gerçek ticket'lar hep böyle gelir: belirsiz, bir şey denenmiş, acil, ve içinde tek bir teşhis bilgisi yok.",
+  phases:[
+  {h:"Sınıflandır (30 saniye)", why:"Her şeyden önce: bu Prio 1 mi değil mi?",
+   body:`<table>
+     <tr><th style="width:30%">Auswirkung</th><td>1 kasa etkileniyor, diğerleri çalışıyor, tam duruş yok</td></tr>
+     <tr><th>Dringlichkeit</th><td>Yüksek, müşteri bekliyor</td></tr>
+     <tr><th>Priorität</th><td><b>Prio 2 (hoch).</b> Prio 1 olurdu: tüm kasalar, veya ödeme alınamıyor</td></tr>
+     <tr><th>Kanal</th><td>E-posta yazma. <b>Telefon aç.</b> Kuyruk varken yazışma yanlış araç</td></tr>
+   </table>
+   <blockquote><p>Ich rufe kurz an, das geht schneller als schreiben.</p></blockquote>`},
+  {h:"İlk temas: doğru altı soru", why:"Semptomu değil, hedefi ve sınırı sor.",
+   body:`<ol>
+     <li>Was genau geht nicht: kommt gar nichts, oder kommt eine Fehlermeldung?</li>
+     <li><b>Kannst du trotzdem kassieren, bucht die Kasse den Vorgang ab?</b> &larr; iş etkisini bu belirler</li>
+     <li>Seit wann? Ging es gestern Abend noch?</li>
+     <li>Nur Kasse 2 oder auch die anderen?</li>
+     <li>Nur der Bon, oder auch der EC-Beleg vom Kartenterminal?</li>
+     <li>Was habt ihr schon probiert: Papier, Deckel, Drucker aus und an?</li>
+   </ol>
+   <p><b>Gelen cevaplar:</b> Kasada işlem tamamlanıyor, sadece bon çıkmıyor. Dün akşam çalışıyordu. Sadece Kasse 2. EC belgesi çıkıyor. Kâğıt dolu, PC yeniden başlatılmış.</p>
+   <p>Bu dört cevap hipotez listeni yarıya indirdi: kasa yazılımı ve TSE çalışıyor, sorun <b>yazdırma yolunda</b>, ve <b>dün akşamla bu sabah arasında</b> bir şey değişti.</p>`},
+  {h:"Önce ara çözüm, sonra sebep", why:"Günün altın kuralı: satış durmaz.",
+   body:`<blockquote><p>Damit ihr weiter verkaufen könnt: Nehmt bitte vorübergehend Kasse 3, und den Beleg gebe ich euch gleich über den Bürodrucker aus. Die Ursache schaue ich mir parallel an.</p></blockquote>
+   <p><b>Hukuki refleks, bunu söylemek puan getirir:</b> Kasada Belegausgabepflicht var. Bon yazıcısının arızası satışı durdurmaz, çünkü kayıt ve TSE tarafı çalışıyor; ama müşteriye belge verilebilmesi gerekir, kâğıt veya elektronik.</p>
+   <blockquote><p>Solange die Kasse selbst und die TSE sauber aufzeichnen, ist der Druckerausfall ein Peripherieproblem. Ein Beleg muss aber weiterhin ausgegeben werden können, deswegen zuerst der Ersatzweg. Wenn die Kasse eine TSE-Meldung wirft, ist das ein anderer Fall, dann eskaliere ich sofort.</p></blockquote>
+   <div class="trap"><b>Dikkat:</b> Kesin hukuki hüküm verme. "Ben böyle davranırım, şüphede muhasebeyle veya kasa servisiyle konuşurum" tonu doğru olan.</div>`},
+  {h:"Hipotezler, olasılığa göre", why:"Sesli düşünmen gereken yer burası.",
+   body:`<table>
+     <tr><th>#</th><th>Hipotez</th><th style="width:34%">Bu vakada</th></tr>
+     <tr><td>1</td><td>Kâğıt, kapak, donanım</td><td>Kullanıcı kontrol etti</td></tr>
+     <tr><td>2</td><td>Kuyruk takıldı / Spooler</td><td>Kontrol edilecek</td></tr>
+     <tr><td>3</td><td>Yazıcıya ağdan ulaşılamıyor</td><td>Kontrol edilecek</td></tr>
+     <tr><td>4</td><td>Printserver'da port veya sürücü</td><td>Kontrol edilecek</td></tr>
+     <tr><td>5</td><td>Kasa yazılımında yazıcı ataması</td><td>Sonra</td></tr>
+     <tr><td>6</td><td>Cihaz arızası</td><td>En son</td></tr>
+   </table>
+   <p>"Dün akşam çalışıyordu, sabah çalışmıyor" ifadesi 2, 3 ve 4'ü öne çıkarır: gece bir şey değişti.</p>`},
+  {h:"Teşhis, komut komut", why:"Her komutun sonucu bir hipotezi eler.",
+   body:`<p><b>a) Kuyruk takılmış mı?</b></p>
+   <pre><code>Get-PrintJob -PrinterName "KASSE2-BON"</code></pre>
+   <p>İki iş "Error" durumunda bekliyor. Bu bir <i>belirti</i>, sebep değil: işler bir yere gönderilemediği için birikmiş.</p>
+   <p><b>b) Yazıcıya ulaşılıyor mu?</b></p>
+   <pre><code>ping 192.168.10.42
+<span class="cm">-> Zeitüberschreitung der Anforderung</span></code></pre>
+   <p><b>c) Cihaz ölü mü, yoksa adresi mi değişti?</b><br>
+   Besleme tuşunu basılı tutarak <b>Selbsttest / Konfigurationsseite</b> bastır. Kâğıt çıkıyor, yani cihaz sağlam, sadece ağdan görünmüyor. Çıktıdaki IP: <b>192.168.10.87</b>.</p>
+   <p><b>d) Printserver ne diyor?</b></p>
+   <pre><code>Get-Printer -Name "KASSE2-BON" | Select-Object Name, PortName, DriverName
+Get-PrinterPort -Name "IP_192.168.10.42" | Select-Object Name, PrinterHostAddress
+<span class="cm">-> Port zeigt weiterhin auf .42, das Gerät sitzt auf .87</span></code></pre>
+   <p><b>e) Neden değişti?</b> DHCP konsolunda cihazın MAC adresi için <b>rezervasyon yok</b>, sadece dinamik bir lease var.</p>`},
+  {h:"Kök sebep", why:"İyi bir kök sebep, kullanıcının anlattığı TÜM belirtileri açıklar.",
+   body:`<blockquote><p>Der Bondrucker hat nach einem Neustart über Nacht per DHCP eine neue IP bekommen, weil für seine MAC-Adresse keine Reservierung hinterlegt war. Der Druckerport auf dem Printserver zeigte weiterhin auf die alte Adresse.</p></blockquote>
+   <p>Bu sebep üç detayı birden açıklıyor: neden sadece bu kasa, neden dün akşam çalışıyordu, neden PC'yi yeniden başlatmak işe yaramadı.</p>
+   <p><b>Kural:</b> Sebebin belirtilerden birini açıklamıyorsa, o sebep yanlıştır.</p>`},
+  {h:"Çözüm: önce ayağa kaldır, sonra kalıcı yap", why:"İkisi ayrı iştir ve ikisi de yazılır.",
+   body:`<p><b>Sofortlösung</b></p>
+   <pre><code>Set-PrinterPort -Name "IP_192.168.10.42" -PrinterHostAddress "192.168.10.87"
+Restart-Service -Name Spooler</code></pre>
+   <p><b>Nachhaltige Lösung:</b> cihazın MAC'ine DHCP rezervasyonu, veya evin standardı sabit IP ise cihazda sabit adres.</p>
+   <p>Ve burada <b>izin sor</b>, kendi başına standart belirleme:</p>
+   <blockquote><p>Ich würde für den Drucker eine DHCP-Reservierung anlegen, damit er nach einem Stromausfall wieder dieselbe Adresse bekommt. Ist das euer Standard, oder vergebt ihr bei Kassenperipherie feste IPs? Ich richte mich nach dem, was hier üblich ist.</p></blockquote>`},
+  {h:"Doğrulama", why:"Adayların en çok atladığı adım. Kendi testin yeterli değil.",
+   body:`<ol>
+     <li>Testbon</li>
+     <li>Melanie ile birlikte <b>gerçek bir satış</b>: bon çıkıyor mu, doğru kasadan mı, format bozuk mu</li>
+     <li>Kuyrukta artık hata yok</li>
+   </ol>
+   <blockquote><p>Probier bitte einmal einen ganz normalen Verkauf, ich bleibe dran. Wenn heute Nachmittag noch mal etwas komisch ist, meld dich direkt bei mir und starte nicht neu, dann sehe ich mehr.</p></blockquote>
+   <p class="behind">Son cümle bilinçli: yeniden başlatma kanıtı siler.</p>`},
+  {h:"Dokümantasyon (asıl not aldığın yer)", why:"Üç bölüm hiç değişmez: bildirilen / sebep / yapılan.",
+   body:`<blockquote>
+     <p><b>Meldung:</b> Kasse 2 druckt seit heute Morgen keine Bons. Kassiervorgang und TSE-Aufzeichnung waren nicht betroffen, nur die Belegausgabe.</p>
+     <p><b>Ursache:</b> Der Bondrucker hat nach einem Neustart über Nacht per DHCP eine neue IP-Adresse erhalten (alt 192.168.10.42, neu 192.168.10.87). Für die MAC-Adresse war keine Reservierung hinterlegt. Der Druckerport auf dem Printserver zeigte weiterhin auf die alte Adresse, dadurch blieben die Druckaufträge in der Warteschlange hängen.</p>
+     <p><b>Maßnahme:</b> Übergangsweise auf Kasse 3 ausgewichen, Beleg über den Bürodrucker ausgegeben. Danach Druckerport auf die neue Adresse umgestellt, Warteschlange geleert, Spooler neu gestartet. Anschließend gemeinsam mit der Kollegin mit einem echten Verkaufsvorgang geprüft, Bon wird wieder gedruckt.</p>
+     <p><b>Offen / Empfehlung:</b> DHCP-Reservierung für die MAC-Adresse anlegen. Zusätzlich prüfen, welche weitere Kassen- und Lagerperipherie ohne Reservierung im DHCP hängt, dort tritt derselbe Fehler beim nächsten Stromausfall erneut auf.</p>
+   </blockquote>
+   <p>Son paragraf seni ayıran yer: tekil vakayı kapatıp <b>yapısal olanı</b> görmek. Bir sonraki adım artık Störung değil, bir Problem-Ticket.</p>`},
+  {h:"Ne zaman eskalasyon", why:"Sınırını bilmek, çözmek kadar değerli.",
+   body:`<ul>
+     <li>Kasa yazılımı <b>TSE hatası</b> veriyorsa: kasa hizmet sağlayıcısı, ve kesinti belgelenir</li>
+     <li>Ödeme alınamıyorsa (kart terminali): Prio 1</li>
+     <li>Birden fazla kasa aynı anda: ağ veya sunucu tarafı, tekil cihaz değil</li>
+     <li>Sebebi bulamadın ve <b>tahminle üretime dokunacaksan</b>: dur, sor</li>
+   </ul>`}
+  ],
+  close:`<h4>Zayıf aday ile karşılaştırma</h4>
+  <table><tr><th style="width:50%">Zayıf</th><th>Sen</th></tr>
+  <tr><td>Hemen uzaktan bağlanır</td><td>Önce telefon açar, iş etkisini sorar</td></tr>
+  <tr><td>Yazıcıyı yeniden kurar, çalışır, kapatır</td><td>Sebebi bulur, tekrarını engeller</td></tr>
+  <tr><td>"Drucker war defekt" yazar</td><td>Eski/yeni IP dahil sebebi yazar</td></tr>
+  <tr><td>Kendi test eder</td><td>Kullanıcıyla gerçek işlemle doğrular</td></tr>
+  <tr><td>Kuyruğu siler, biter</td><td>Aynı riskteki diğer cihazları sorar</td></tr></table>
+  <h4>Probetag'de bunu nasıl sunarsın</h4>
+  <p>Yanındaki kişi ekranını değil <b>sırayı</b> izliyor. Yüksek sesle şu üç cümleyi kur:</p>
+  <blockquote><p>Bevor ich irgendetwas anfasse: Kann noch kassiert werden? Gut, dann ist es kein Prio 1.</p>
+  <p>Es ging gestern Abend noch und betrifft nur diese eine Kasse. Also hat sich über Nacht etwas verändert, und zwar nur an diesem Gerät.</p>
+  <p>Der Drucker druckt seine Konfigurationsseite, also lebt er. Dann ist es kein Defekt, sondern ein Weg-Problem.</p></blockquote>`
+},
+{
+  id:"T2", badge:"Auftrag · geplant",
+  title:"Arbeitsplatzaufbau und Benutzeranlage",
+  lead:"Bu bir Störung değil, planlı bir Auftrag. Ölçülen şey hız değil, sistematik: doğru sıra, yetki mantığı, ve teslim kalitesi. Probetag'in en olası tek başına görevi.",
+  intake:{hdr:"Jira FXXL-238 &middot; Von: Verwaltung (Frau Wagner) &middot; Fällig: Montag",
+    betreff:"Neuer Mitarbeiter Verkauf ab Montag",
+    msg:"Hallo, ab Montag fängt ein neuer Kollege im Verkauf an. Kannst du ihm bitte alles einrichten? Am besten so wie beim Thomas."},
+  note:"Bu görevdeki tuzak ilk bakışta görünmüyor: iki cümlede de eksik bilgi var, ve son cümle (\"so wie beim Thomas\") bir yetki hatası daveti.",
+  phases:[
+  {h:"Başlamadan önce: eksik olanı sor", why:"Yanlış kurulan bir arbeitsplatz, ilk günü mahveder ve iki kat iş çıkarır.",
+   body:`<p>Klavyeye dokunmadan netleştirilecekler:</p>
+   <ul>
+     <li>Ad soyad tam yazımı, <b>giriş tarihi</b>, tam/yarı zamanlı</li>
+     <li>Rol ve bölüm: Verkauf mu, Werkstatt mı, Lager mı? Yetkiler buna bağlı</li>
+     <li>Amiri kim? (onay ve devir için)</li>
+     <li>Hangi sistemler gerekli: Navision, Cycle, Kasse, Zeiterfassung, posta, SharePoint</li>
+     <li>Donanım var mı, yeni mi alınacak? Mobil cihaz olacak mı (Intune)?</li>
+     <li>Hangi M365 lisansı? (lisans yoksa ilk gün giriş yapamaz)</li>
+     <li>Anahtar, ziyaretçi/geçiş kartı, kasa kullanıcısı ayrı mı?</li>
+   </ul>
+   <blockquote><p>Bevor ich anfange, brauche ich drei Sachen von dir: das genaue Eintrittsdatum, die Abteilung und wer sein Vorgesetzter ist. Danach kann ich alles andere selbst klären.</p></blockquote>`},
+  {h:"\"So wie beim Thomas\" tuzağı", why:"Bu cümle en sık yapılan yetki hatasının kaynağıdır.",
+   body:`<p>Mevcut kullanıcıyı kopyalamak, o kullanıcının yıllar içinde biriktirdiği <b>eski ve gereksiz yetkilerini</b> de kopyalar. Üç yıl sonra kimse o hakkın neden orada olduğunu bilmez.</p>
+   <blockquote><p>Ich kopiere ungern einen bestehenden Benutzer, weil man sich damit alte Rechte mit einkauft. Ich lege ihn über die Rollengruppe für den Verkauf an. Wenn Thomas etwas hat, das der Neue auch braucht, schauen wir uns das gezielt an und tragen es in die Rolle ein.</p></blockquote>
+   <p><b>İlke:</b> Yetki kişiye değil <b>role</b> verilir. Kişi role girer, rol kaynağa erişir.</p>`},
+  {h:"Doğru sıra", why:"Sıra yanlışsa beklersin. Özellikle hibrit ortamda.",
+   body:`<ol>
+     <li>AD kullanıcısı ve grup üyelikleri</li>
+     <li>Entra'ya senkron (hibritse bekleme süresi var)</li>
+     <li>M365 lisansı, posta kutusu, dağıtım listeleri</li>
+     <li>Dosya sunucusu ve SharePoint erişimi (grup üzerinden, doğrudan değil)</li>
+     <li>Cihaz: domain join, doğru OU, GPO, yazılım, yazıcı</li>
+     <li>Uzmanlık sistemleri: Navision, Cycle, Kasse, Zeiterfassung</li>
+     <li>Test ve teslim</li>
+   </ol>
+   <p class="behind">Lisans 3. adımda değil de en sonda verilirse, kullanıcı ilk gün Outlook'a giremez ve senin kurulumun "çalışmıyor" diye geri gelir.</p>`},
+  {h:"AD kullanıcısı", why:"İsimlendirme ve OU tahmin edilmez, sorulur.",
+   body:`<pre><code><span class="cm"># Namenskonvention und OU-Struktur vorher erfragen, nicht raten</span>
+New-ADUser -Name "Max Mustermann" -GivenName "Max" -Surname "Mustermann" -SamAccountName "m.mustermann" -UserPrincipalName "m.mustermann@firma.de" -Path "OU=Verkauf,OU=Benutzer,DC=firma,DC=local" -AccountPassword (Read-Host -AsSecureString "Startkennwort") -ChangePasswordAtLogon $true -Enabled $true
+
+Add-ADPrincipalGroupMembership -Identity "m.mustermann" -MemberOf "GRP_Verkauf","GRP_Drucker_Verkauf"</code></pre>
+   <p><b>Neden OU önemli:</b> yanlış OU'da GPO'lar gelmez. Kullanıcı sürücüyü göremez, yazıcı düşmez, ve sen sebebi cihazda ararsın.</p>
+   <blockquote><p>Wie lautet bei euch die Namenskonvention, und in welche OU gehört der Verkauf? Ich lege lieber einmal richtig an, als es später zu korrigieren.</p></blockquote>`},
+  {h:"Entra ve M365", why:"Hibrit ortamda en sık takılınan yer senkron gecikmesi.",
+   body:`<ul>
+     <li>Senkron beklenmiyorsa AD Connect sunucusunda delta senkron tetiklenir (yetkisi olan kişiyle)</li>
+     <li>Lisans atanır, <b>doğru</b> lisans: kullanmayacağı bir plan para kaybı</li>
+     <li>Posta kutusu, dağıtım listeleri, ortak posta kutusu erişimi</li>
+     <li>MFA kaydı: ilk girişte kullanıcı kendi kaydını yapar, sen onun adına kaydetme</li>
+     <li>SharePoint erişimi <b>grup üzerinden</b></li>
+   </ul>
+   <pre><code>Start-ADSyncSyncCycle -PolicyType Delta   <span class="cm"># nur auf dem AD-Connect-Server, mit Absprache</span></code></pre>
+   <div class="trap"><b>Dürüstlük:</b> M365 ve Entra'yı canlı işletmede yönetmedin. "Aus der Umschulung und aus eigenen Umgebungen kenne ich das, im laufenden Betrieb habe ich es noch nicht verantwortet. Ich frage lieber einmal, bevor ich in einer Produktivumgebung klicke."</div>`},
+  {h:"Cihaz kurulumu", why:"Burada checklist mantığın görünür.",
+   body:`<ol>
+     <li>Standart image veya kurulum listesi var mı? Yoksa yazarak oluştur</li>
+     <li>Cihaz adı isimlendirme kuralına göre</li>
+     <li>Domain join, <b>doğru OU</b></li>
+     <li>Politikaların gelip gelmediğini doğrula:</li>
+   </ol>
+   <pre><code>gpupdate /force
+gpresult /r
+net use          <span class="cm"># kommen die Laufwerke?</span></code></pre>
+   <ol start="5">
+     <li>Standart yazılım, yazıcı, Netzlaufwerk</li>
+     <li>Mobil cihaz varsa Intune enrollment</li>
+     <li>Güncellemeler, disk şifreleme, yedekleme kapsamı</li>
+   </ol>`},
+  {h:"Test: kullanıcı hesabıyla, admin hesabıyla değil", why:"Bu tek cümle, tecrübeli ile acemiyi ayırır.",
+   body:`<p>Admin hesabıyla her şey çalışır. Kullanıcı Pazartesi günü admin değil.</p>
+   <p>Kullanıcı hesabıyla oturum aç ve tek tek dene:</p>
+   <ul>
+     <li>Oturum açma ve profil oluşumu</li>
+     <li>Netzlaufwerk açılıyor mu, <b>yazma</b> hakkı var mı</li>
+     <li>Varsayılan yazıcıdan bir test sayfası</li>
+     <li>Outlook açılıyor, posta geliyor mu</li>
+     <li>Navision / Cycle / Kasse girişi</li>
+     <li>Zeiterfassung kaydı</li>
+   </ul>
+   <pre><code>Get-ADUser "m.mustermann" -Properties MemberOf, Enabled</code></pre>`},
+  {h:"Teslim", why:"Kurulum biter, iş bitmez. İlk izlenimi sen veriyorsun.",
+   body:`<ul>
+     <li>Parola <b>güvenli kanaldan</b>: yüz yüze veya amirine, e-postayla değil</li>
+     <li>İlk girişte parola değişimi zaten zorunlu</li>
+     <li>5 dakikalık kısa tanıtım: nereye kaydediyoruz, yazıcı nerede, sorun olursa nasıl bildiriyorsun</li>
+     <li>Ticket sistemine nasıl yazılacağını göster, bu sana ileride zaman kazandırır</li>
+   </ul>
+   <blockquote><p>Wenn etwas nicht geht, schreib mir bitte kurz, was du gerade machen wolltest und seit wann es klemmt. Damit finde ich es meistens schon beim ersten Blick.</p></blockquote>`},
+  {h:"Dokümantasyon ve envanter", why:"Tek kişilik IT'de yazılmayan iş, yapılmamış iştir.",
+   body:`<blockquote>
+     <p><b>Auftrag:</b> Arbeitsplatz und Benutzerkonto für neuen Kollegen im Verkauf, Eintritt Montag.</p>
+     <p><b>Umgesetzt:</b> AD-Benutzer m.mustermann in OU Verkauf, Mitgliedschaften über die Rollengruppen GRP_Verkauf und GRP_Drucker_Verkauf. M365-Lizenz zugewiesen, Postfach und Verteiler eingerichtet. Rechner VK-PC-07 in die Domäne aufgenommen, Standardsoftware, Drucker und Laufwerke geprüft. Zugänge für Navision, Kasse und Zeiterfassung beantragt und getestet.</p>
+     <p><b>Test:</b> Anmeldung, Laufwerkszugriff mit Schreibrecht, Testdruck und Kassenanmeldung mit dem Benutzerkonto durchgeführt, nicht mit einem Adminkonto.</p>
+     <p><b>Übergabe:</b> Kennwort persönlich übergeben, Änderung bei erster Anmeldung erzwungen. Kurze Einweisung erfolgt.</p>
+     <p><b>Hinweis:</b> Es gab keine Checkliste für den Standard-Arbeitsplatz. Ich habe die Schritte mitgeschrieben, daraus lässt sich eine machen.</p>
+   </blockquote>
+   <p>Envanter kaydı: cihaz, seri numarası, kullanıcı, tarih. Bu olmadan offboarding günü donanımın nerede olduğunu kimse bilmez.</p>`},
+  {h:"Offboarding: aynı listenin tersi", why:"Bugün kurduğunu bir gün sökeceksin. Ona göre yaz.",
+   body:`<ul>
+     <li>Hesabı <b>sil değil, devre dışı bırak</b>, oturumları sonlandır</li>
+     <li>Posta kutusunu amirine yönlendir veya erişim ver</li>
+     <li>Lisansı saklama süresi dolunca çek</li>
+     <li>VPN, TeamViewer, kasa kullanıcısı, Zeiterfassung kapat</li>
+     <li>Donanım ve anahtarları geri al, envantere işle</li>
+   </ul>
+   <blockquote><p>Ich lösche das Konto nicht sofort, sonst sind Postfach und Berechtigungshistorie weg.</p></blockquote>`},
+  {h:"Bu görevin tuzakları", why:"Her biri gerçekten yaşanır.",
+   body:`<table>
+     <tr><th style="width:44%">Tuzak</th><th>Sonucu</th></tr>
+     <tr><td>Mevcut kullanıcıyı kopyalamak</td><td>Sessizce fazla yetki</td></tr>
+     <tr><td>Yanlış OU</td><td>GPO gelmez, sürücü ve yazıcı yok</td></tr>
+     <tr><td>Lisansı en sona bırakmak</td><td>İlk gün Outlook açılmaz</td></tr>
+     <tr><td>Senkronu beklememek</td><td>"Kullanıcı yok" hatası, boşa arama</td></tr>
+     <tr><td>Admin hesabıyla test</td><td>Her şey çalışır, Pazartesi hiçbiri çalışmaz</td></tr>
+     <tr><td>Parolayı e-postayla göndermek</td><td>Güvenlik ihlali, mazereti yok</td></tr>
+     <tr><td>Yetkiyi doğrudan kişiye vermek</td><td>Üç ay sonra kimse sebebini bilmez</td></tr>
+   </table>`}
+  ],
+  close:`<h4>Probetag'de bunu nasıl sunarsın</h4>
+  <p>Bu görevde en çok not aldıran cümle teknik değil, organizasyoneldir:</p>
+  <blockquote><p>Gibt es hier eine Checkliste für den Standard-Arbeitsplatz? Wenn nicht, schreibe ich mit, was ich gemacht habe, dann habt ihr sie danach.</p></blockquote>
+  <p>Ve bitirirken:</p>
+  <blockquote><p>Getestet habe ich mit seinem eigenen Konto, nicht mit einem Adminkonto. Sonst sieht am Montag alles anders aus.</p></blockquote>`
+}
+];
+
+/* --------------------------- render --------------------------- */
+
+const TABS = [
+  ["analyse","1 · Analiz"],
+  ["ablauf","2 · Günün akışı"],
+  ["faelle","3 · Vaka provası"],
+  ["ticket","4 · Ticket-Werkstatt"],
+  ["feldbogen","5 · Feldbogen"],
+  ["spick","6 · Spickzettel"]
+];
+
+const store = {
+  key:"fxxl-probetag-v1",
+  data:{},
+  load(){ try{ this.data = JSON.parse(localStorage.getItem(this.key)||"{}"); }catch(e){ this.data={}; } },
+  set(k,v){ this.data[k]=v; try{ localStorage.setItem(this.key,JSON.stringify(this.data)); }catch(e){} },
+  get(k,d){ return (k in this.data)?this.data[k]:d; }
+};
+store.load();
+
+function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstElementChild; }
+
+/* tabs */
+const bar=document.getElementById("tabbar");
+TABS.forEach(([id,label],i)=>{
+  const b=document.createElement("button");
+  b.textContent=label; b.dataset.target="tab-"+id;
+  if(i===0) b.classList.add("active");
+  b.onclick=()=>{
+    document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    document.getElementById(b.dataset.target).classList.add("active");
+    window.scrollTo({top:0,behavior:"instant"});
+  };
+  bar.appendChild(b);
+});
+
+/* 1 — Analiz */
+(function(){
+  const p=document.getElementById("tab-analyse");
+  p.appendChild(el(`<h2>Elindeki iki dokümanın analizi</h2>`));
+  p.appendChild(el(`<p class="sub">Neyi koruyoruz, neyi güncelliyoruz, nerede risk var.</p>`));
+  p.appendChild(el(`<div class="banner"><b>Temel bulgu:</b> Aynı Personio ilanı (ID 2692754) Ağustos'ta <i>IT Applikations- und Prozessmanager</i> başlığındaydı,
+    bugün <i>Fachinformatiker Systemintegration/Anwendungsentwicklung im First-, Second- und Third-Level-Support</i>.
+    Dokümanların eskisine göre yazılmış. Bu simülasyon ikisini birleştirir: destek ve sistem tarafı ana bölüm, süreç analizi bonus bölüm.</div>`));
+  ANALYSE.forEach(a=>{
+    p.appendChild(el(`<div class="card"><span class="tag ${a.tag[0]}">${a.tag[1]}</span><h3>${a.h}</h3>${a.body}</div>`));
+  });
+})();
+
+/* 2 — Ablauf */
+(function(){
+  const p=document.getElementById("tab-ablauf");
+  p.appendChild(el(`<h2>Günün akışı — saat saat</h2>`));
+  p.appendChild(el(`<p class="sub">200 kişilik bir aile şirketinde tipik akış. Her soruda önce kendi cevabını kur, sonra aç.</p>`));
+  const tb=el(`<div class="toolbar"><button id="revealAll">Tüm cevapları aç</button><button id="hideAll">Hepsini kapat (prova modu)</button></div>`);
+  p.appendChild(tb);
+  ABLAUF.forEach(b=>{
+    const c=el(`<div class="card"><span class="tag t-time">${b.time}</span><h3>${b.title}</h3>
+      <p class="behind"><b>Ne test ediliyor:</b> ${b.tests}</p></div>`);
+    b.items.forEach(it=>{
+      const qa=el(`<div class="qa"><p class="q">${it.q}</p><p class="behind">${it.behind}</p></div>`);
+      const btn=el(`<button class="reveal">Cevap iskeleti</button>`);
+      const ans=el(`<div class="answer">${it.a}${it.trap?`<div class="trap"><b>Tuzak:</b> ${it.trap}</div>`:""}</div>`);
+      btn.onclick=()=>{ans.classList.toggle("open"); btn.textContent=ans.classList.contains("open")?"Gizle":"Cevap iskeleti";};
+      qa.appendChild(btn); qa.appendChild(ans); c.appendChild(qa);
+    });
+    p.appendChild(c);
+  });
+  document.getElementById("revealAll").onclick=()=>{
+    p.querySelectorAll(".answer").forEach(a=>a.classList.add("open"));
+    p.querySelectorAll(".reveal").forEach(b=>b.textContent="Gizle");
+  };
+  document.getElementById("hideAll").onclick=()=>{
+    p.querySelectorAll(".answer").forEach(a=>a.classList.remove("open"));
+    p.querySelectorAll(".reveal").forEach(b=>b.textContent="Cevap iskeleti");
+  };
+})();
+
+/* 3 — Fälle */
+(function(){
+  const p=document.getElementById("tab-faelle");
+  p.appendChild(el(`<h2>Vaka provası</h2>`));
+  p.appendChild(el(`<p class="sub">Önce sadece başlığı oku, cevabı yüksek sesle kur, sonra aç ve karşılaştır. İşaretlediğin vaka kaydedilir.</p>`));
+  FAELLE.forEach(f=>{
+    const done=store.get("case-"+f.id,false);
+    const c=el(`<div class="card">
+      <span class="tag t-prob">${f.prob}</span>
+      <h3>${f.id} &middot; ${f.t}</h3>
+      <p class="behind">${f.behind}</p>
+      <label class="chk"><input type="checkbox" ${done?"checked":""}><span>Bunu sesli prova ettim</span></label>
+    </div>`);
+    c.querySelector("input").onchange=e=>store.set("case-"+f.id,e.target.checked);
+    const btn=el(`<button class="reveal">Cevap iskeleti</button>`);
+    const ans=el(`<div class="answer">${f.a}</div>`);
+    btn.onclick=()=>{ans.classList.toggle("open"); btn.textContent=ans.classList.contains("open")?"Gizle":"Cevap iskeleti";};
+    c.appendChild(btn); c.appendChild(ans);
+    p.appendChild(c);
+  });
+})();
+
+/* helper: gizli cevap bloğu */
+function attachReveal(parent,label,html){
+  const btn=el('<button class="reveal">'+label+'</button>');
+  const ans=el('<div class="answer">'+html+'</div>');
+  btn.onclick=()=>{ans.classList.toggle("open");btn.textContent=ans.classList.contains("open")?"Gizle":label;};
+  parent.appendChild(btn); parent.appendChild(ans);
+}
+
+/* 4 — Ticket-Werkstatt */
+(function(){
+  const p=document.getElementById("tab-ticket");
+  p.appendChild(el(`<h2>Ticket-Werkstatt</h2>`));
+  p.appendChild(el(`<p class="sub">İki vaka, baştan sona. Önce ticket'ı oku, kendi adımlarını kur, sonra tek tek aç ve karşılaştır.</p>`));
+  p.appendChild(el(`<div class="toolbar"><button id="tOpen">Tüm adımları aç</button><button id="tClose">Hepsini kapat (prova modu)</button></div>`));
+
+  TICKETS.forEach(t=>{
+    const c=el(`<div class="card">
+      <span class="tag t-prob">${t.badge}</span>
+      <h3>${t.id} &middot; ${t.title}</h3>
+      <p class="behind">${t.lead}</p>
+      <div class="intake">
+        <div class="hdr">${t.intake.hdr}<br><b>Betreff:</b> ${t.intake.betreff}</div>
+        <div class="msg">&raquo;${t.intake.msg}&laquo;</div>
+      </div>
+      <p class="behind">${t.note}</p>
+    </div>`);
+    t.phases.forEach((ph,i)=>{
+      const box=el(`<div class="phase">
+        <h4><span class="step-no">${i+1}</span>${ph.h}</h4>
+        <p class="why">${ph.why}</p>
+      </div>`);
+      attachReveal(box,"Adımı aç",ph.body);
+      c.appendChild(box);
+    });
+    const endBox=el(`<div class="phase"><h4><span class="step-no">&#10003;</span>Sonuç ve sunum</h4></div>`);
+    attachReveal(endBox,"Aç",t.close);
+    c.appendChild(endBox);
+    p.appendChild(c);
+  });
+
+  p.appendChild(el(`<div class="card"><span class="tag t-warn">KENDİNE PROVA</span>
+    <h3>Aynı iskeleti bu ticket'a uygula</h3>
+    <div class="intake"><div class="hdr">Zendesk &middot; Von: Thomas B. (Lager)</div>
+    <div class="msg">&raquo;Ich komme seit heute nicht mehr auf das Laufwerk W:. Bei meinem Kollegen geht es. Ich hatte gestern einen neuen Laptop bekommen.&laquo;</div></div>
+    <p>Cevabı bilerek yazmıyorum. Sırayı hatırla: iş etkisi &rarr; tek kişi mi herkes mi &rarr; dün ne değişti &rarr; grup üyeliği mi, GPO mu, isim çözümleme mi &rarr; ara çözüm &rarr; sebep &rarr; kullanıcıyla doğrulama &rarr; üç bölümlü not.</p>`)
+  );
+  const hintCard=p.lastElementChild;
+  attachReveal(hintCard,"Sadece ipuçlarını göster",`
+    <ul>
+      <li>Yeni cihaz + dün: <b>cihaz</b> değişti, kullanıcı değil. Yani hesabı değil, cihazın politikalarını şüphelen</li>
+      <li>Kollege çalışıyor: sunucu ve paylaşım ayakta, sorun bu cihaz veya bu kullanıcı-cihaz kombinasyonu</li>
+      <li>Sorulacak: yeni laptop domain'de mi, <b>hangi OU'da</b>? <code>gpresult /r</code> ne diyor?</li>
+      <li>Sürücü GPO ile mi bağlanıyor, script ile mi? <code>net use</code> çıktısı</li>
+      <li>İsim çözümleme: <code>ping fileserver</code> ve <code>nslookup</code></li>
+      <li>Ara çözüm: sürücüyü manuel bağla, çalışmaya devam etsin, sebep sonra</li>
+      <li>Muhtemel sebep ailesi: yanlış OU, senkronize olmamış grup üyeliği, cachelenmiş eski kimlik bilgisi</li>
+    </ul>`);
+
+  document.getElementById("tOpen").onclick=()=>{
+    p.querySelectorAll(".answer").forEach(a=>a.classList.add("open"));
+    p.querySelectorAll(".reveal").forEach(b=>b.textContent="Gizle");
+  };
+  document.getElementById("tClose").onclick=()=>{
+    p.querySelectorAll(".answer").forEach(a=>a.classList.remove("open"));
+    p.querySelectorAll(".reveal").forEach(b=>{b.textContent = b.parentElement.classList.contains("phase")?"Adımı aç":"Aç";});
+  };
+})();
+
+/* 5 — Feldbogen */
+(function(){
+  const p=document.getElementById("tab-feldbogen");
+  p.appendChild(el(`<h2>Feldbogen — yanına al</h2>`));
+  p.appendChild(el(`<p class="sub">Yazdır ve kâğıt olarak doldur. Buraya yazdıkların da tarayıcıda saklanır.</p>`));
+  p.appendChild(el(`<div class="toolbar"><button id="printBtn">Yazdır</button><button id="clearBtn">Notları temizle</button></div>`));
+
+  // A: Beobachtung
+  let rows="";
+  for(let i=1;i<=8;i++){
+    rows+=`<tr><td>${i}</td>
+      <td><input type="text" data-k="b${i}a"></td>
+      <td><input type="text" data-k="b${i}b"></td>
+      <td><input type="text" data-k="b${i}c"></td>
+      <td><input type="text" data-k="b${i}d"></td>
+      <td><input type="text" data-k="b${i}e"></td></tr>`;
+  }
+  const cardA=el(`<div class="card"><h3>A &middot; Beobachtungsbogen</h3>
+    <div class="scroll"><table>
+      <tr><th>#</th><th>Bereich</th><th>Was passiert (nötr)</th><th>System / Medium</th><th>Verlustart</th><th>Wie oft / Dauer</th></tr>
+      ${rows}
+    </table></div>
+    <p class="behind"><b>Verlustarten:</b> Doppelerfassung &middot; Medienbruch &middot; Systembruch &middot; Wartezeit/Rückfrage &middot; Unterbrechung &middot; Suchen &middot; manuelle Auswertung &middot; Nacharbeit</p>
+  </div>`);
+  p.appendChild(cardA);
+  attachReveal(cardA,"Nasıl doldurulur — örnek satırlar",`
+    <div class="scroll"><table>
+      <tr><th>Bereich</th><th>Was passiert (nötr)</th><th>System</th><th>Verlustart</th><th>Wie oft</th></tr>
+      <tr><td>Werkstatt</td><td>Auftrag wird am Tresen auf einen Zettel geschrieben und abends ins System übertragen</td><td>Papier &rarr; Werkstattmodul</td><td>Medienbruch + Doppelerfassung</td><td>ca. 15 / Tag, je 2 Min</td></tr>
+      <tr><td>Verkauf</td><td>Kunde fragt, ob sein Rad fertig ist; Verkäufer geht in die Werkstatt und fragt nach</td><td>kein System, Zuruf</td><td>Unterbrechung + Suchen</td><td>ca. 8 / Tag, je 5 Min</td></tr>
+      <tr><td>Lager</td><td>Wareneingang wird erst am Abend gebucht, tagsüber steht der Bestand falsch</td><td>Navision</td><td>Wartezeit / falsche Daten</td><td>täglich</td></tr>
+    </table></div>
+    <p><b>Formülasyon farkı — bu tabloya yazdıklarını akşam okuyacaksın:</b></p>
+    <table>
+      <tr><th style="width:50%">Kötü (yargı)</th><th>İyi (gözlem)</th></tr>
+      <tr><td>"Die Werkstatt arbeitet unorganisiert"</td><td>"Der Auftrag wird zweimal erfasst, einmal auf Papier, einmal im System"</td></tr>
+      <tr><td>"Das System ist veraltet"</td><td>"Für einen Verkauf werden drei Programme gebraucht"</td></tr>
+      <tr><td>"Keiner weiß, wo die Räder sind"</td><td>"Beim Suchen eines Rades wurde zweimal in der Halle nachgeschaut"</td></tr>
+    </table>
+    <p class="behind">Kural: <b>fiil yaz, sıfat yazma.</b> Yargı içeren satırı akşam sunumunda kullanamazsın, gözlem içeren satırı kullanabilirsin.</p>
+    <p><b>Sayıyı tahmin etme, sor:</b> "Wie oft passiert das ungefähr am Tag?" Tek bir sayı, tüm sunumunu somut yapar.</p>`);
+
+  // B: die eine Frage
+  let qrows="";
+  for(let i=1;i<=6;i++){
+    qrows+=`<tr><td><input type="text" data-k="p${i}a"></td>
+      <td><input type="text" data-k="p${i}b"></td>
+      <td><input type="text" data-k="p${i}c"></td></tr>`;
+  }
+  const cardB=el(`<div class="card"><h3>B &middot; Die eine Frage</h3>
+    <blockquote><p>Was sind die nervigsten 10 Minuten in deinem Arbeitstag?</p>
+    <em>Nachfassen: Und was machst du dann? &middot; Wer merkt es, wenn das schiefgeht?</em></blockquote>
+    <div class="scroll"><table>
+      <tr><th>Person / Rolle</th><th>Antwort</th><th>Wie oft am Tag?</th></tr>${qrows}
+    </table></div></div>`);
+  p.appendChild(cardB);
+  attachReveal(cardB,"Muhtemel cevaplar ve arkalarındaki iş",`
+    <p>Duyacağın cevaplar tahmin edilebilir. Önemli olan, her cevabın arkasındaki <b>teknik işi</b> anında görebilmen:</p>
+    <div class="scroll"><table>
+      <tr><th style="width:42%">Duyduğun cümle</th><th>Arkasındaki iş</th></tr>
+      <tr><td>"Ich muss zweimal nachschauen, ob das Rad wirklich da ist"</td><td>Stok verisi güvenilmez &rarr; mal girişi/Umlagerung süreci veya iki sistem arasındaki senkron</td></tr>
+      <tr><td>"Das Telefon klingelt dauernd, ob das Rad fertig ist"</td><td>Durum bildirimi yok &rarr; Werkstatt durumundan otomatik mesaj, klasik hızlı kazanım</td></tr>
+      <tr><td>"Ich tippe das abends nochmal ins System"</td><td>Medienbruch &rarr; girişi kaynağa taşı, doğru cihaz + doğru form</td></tr>
+      <tr><td>"Der Drucker/Scanner spinnt immer"</td><td>Tekrar eden Störung &rarr; Problem-Ticket, sebep muhtemelen ağ veya sürücü, tek tek çözmek para kaybı</td></tr>
+      <tr><td>"Ich warte, bis der Kollege aus dem Lager zurück ist"</td><td>Bilgi tek kişide &rarr; erişim veya doküman sorunu, yetki tasarımı</td></tr>
+      <tr><td>"Ich muss dasselbe in zwei Portale eintippen"</td><td>Doppelerfassung &rarr; arayüz veya en azından ön doldurma</td></tr>
+    </table></div>
+    <p><b>Sunumda kullanacağın hale getirmek:</b> bir cevabı seç, sayısıyla birlikte tek cümleye indir.</p>
+    <blockquote><p>Drei Kollegen haben unabhängig voneinander dasselbe genannt: die Nachfrage, ob ein Rad fertig ist. Das passiert nach ihrer Schätzung acht bis zehn Mal am Tag und unterbricht jedes Mal jemanden in der Werkstatt.</p></blockquote>
+    <p class="behind"><b>Altın kural:</b> Aynı şeyi <u>iki farklı kişi</u> söylediyse, o artık kişisel bir sinirlilik değil, süreç sorunudur. Sunumda buna öncelik ver.</p>`);
+
+  // C: Systemlandschaft
+  const systems=[
+    "Warenwirtschaft: Navision (Dynamics NAV) — Version?",
+    "Cycle — was genau macht es, wer ist führend?",
+    "Jeegy — wofür wird es eingesetzt?",
+    "Kassensystem + TSE-Lösung",
+    "Werkstatt-Modul / Terminplanung",
+    "Lieferantenanbindung (Veloconnect?)",
+    "Onlineshop / Marktplätze / PIM",
+    "Leasing-Portale (JobRad, Bikeleasing, Eurorad)",
+    "Zeiterfassung — welches Produkt?",
+    "Dahua-Kameras: wer hat Zugriff, welche Regelung?",
+    "Windows Server: Anzahl, on-prem oder hybrid?",
+    "M365 / Entra / SharePoint — Lizenzmodell",
+    "MDM Intune: welche Geräte sind eingebunden?",
+    "Jira vs. Zendesk: wo verläuft die Grenze?",
+    "Melibo: im Einsatz oder in Evaluation?",
+    "Fortigate / VPN: wer betreut es?",
+    "Veeam: werden Restores getestet?",
+    "Externer Dienstleister — wofür?",
+    "IT-Team: wie viele Leute, wer vertritt wen?",
+    "Verhältnis zum Fahrrad-XXL-Verbund (IT)"
+  ];
+  let srows=systems.map((s,i)=>`<tr><td>${s}</td><td><input type="text" data-k="s${i}"></td></tr>`).join("");
+  const cardC=el(`<div class="card"><h3>C &middot; Systemlandschaft — was ich heute erfahren habe</h3>
+    <div class="scroll"><table><tr><th style="width:46%">Frage</th><th>Antwort</th></tr>${srows}</table></div></div>`);
+  p.appendChild(cardC);
+  attachReveal(cardC,"Hangi cevabı bekle, ne anlama gelir",`
+    <p>Bunlar <b>beklenti</b>, bilgi değil. Doğrulanmadan hiçbirini ağzına alma. Ama cevabı duyduğunda ne anlama geldiğini bilirsen, doğru devam sorusunu sorarsın.</p>
+    <div class="scroll"><table>
+      <tr><th style="width:26%">Konu</th><th style="width:34%">Muhtemel cevap</th><th>Senin için anlamı</th></tr>
+      <tr><td>Navision</td><td>Dynamics NAV, eski sürüm, ana Warenwirtschaft</td><td>Arayüz işleri çoğu zaman dosya tabanlı olur. Sürümü sor: eski NAV'da API sınırlı, o zaman export/import mantığı</td></tr>
+      <tr><td>Cycle</td><td>Fahrradhandel branş çözümü (muhtemelen FullSystem)</td><td>Aynı stok iki yerde yaşıyorsa <b>führendes System</b> sorusu kritik. Envanter farklarının kaynağı çoğu zaman burası</td></tr>
+      <tr><td>Jeegy</td><td>Bilinmiyor, küçük veya iç araç</td><td>Bunu bilmemen normal. "Wofür setzt ihr das ein?" sorusu seni cahil değil, dikkatli gösterir</td></tr>
+      <tr><td>Jira + Zendesk</td><td>Zendesk dışa/kullanıcıya dönük, Jira içeride iş takibi</td><td>Böyle diyorlarsa net; "beides für alles" diyorlarsa düzensizlik var, bu senin ilk kazanımın olabilir</td></tr>
+      <tr><td>Melibo</td><td>Kullanımda veya değerlendirmede</td><td>Kullanımdaysa: bilgi tabanını kim besliyor? Değerlendirmedeyse: bu senin giriş kapın</td></tr>
+      <tr><td>Intune</td><td>Sadece mobil cihazlar, PC'ler klasik GPO</td><td>Hibrit yönetim demek. "Welche Geräte sind wirklich eingebunden?" sorusu gerçek durumu açar</td></tr>
+      <tr><td>Fortigate / Veeam</td><td>Dienstleister bakıyor veya kısmen kendi</td><td>Sorumluluk sınırı nerede biter, bu senin gerçek yetki alanını belirler</td></tr>
+      <tr><td>Windows Server</td><td>On-prem AD + M365 hibrit</td><td>Senkron gecikmesi, kimlik iki yerde. Onboarding sırasını buna göre kurarsın</td></tr>
+      <tr><td>Kasse + TSE</td><td>Kasa sağlayıcısı bakıyor</td><td>Senin sınırın burada biter. Bunu bilmek en az teknik bilgi kadar değerli</td></tr>
+      <tr><td>IT-Team</td><td>Bir veya iki kişi</td><td>Tek kişilik IT ise: dokümantasyon ve izin devri konusu, kapanışta bunu sen dile getir</td></tr>
+    </table></div>
+    <p><b>Günün en iyi tek sorusu:</b></p>
+    <blockquote><p>Wo liegt bei euch die führende Datenhaltung für Artikel und Bestand, und wie synchronisieren sich die Systeme?</p></blockquote>`);
+
+  // D: Fragen
+  const fragen=[
+    "Wie ist der heutige Tag gedacht — Kennenlernen oder mit konkreter Aufgabe?",
+    "Was war der Auslöser für diese Stelle?",
+    "Gibt es eine Liste von Dingen, die schon länger warten?",
+    "Wie viele Tickets pro Tag, und wie ist First/Second/Third aufgeteilt?",
+    "Verhältnis Betrieb vs. Neuentwicklung — 80/20 oder umgekehrt?",
+    "Wer springt im Urlaub ein?",
+    "Wie lange ist die Befristung, und woran entscheidet sich eine Verlängerung?",
+    "Wann darf ich mit einer Rückmeldung rechnen?"
+  ];
+  const fcard=el(`<div class="card"><h3>D &middot; Meine Fragen</h3></div>`);
+  fragen.forEach((f,i)=>{
+    const k="q"+i;
+    const row=el(`<label class="chk"><input type="checkbox" ${store.get(k,false)?"checked":""}><span>${f}</span></label>`);
+    row.querySelector("input").onchange=e=>store.set(k,e.target.checked);
+    fcard.appendChild(row);
+  });
+  attachReveal(fcard,"Gelen cevabı nasıl okursun",`
+    <div class="scroll"><table>
+      <tr><th style="width:32%">Soru</th><th style="width:34%">Cevap</th><th>Sinyal</th></tr>
+      <tr><td rowspan="3">Befristung ne kadar?</td><td>"Elternzeit- oder Krankheitsvertretung"</td><td>Net ve dürüst. Uzatma gerçekten kişiye bağlı olmayabilir, bunu bilmek iyi</td></tr>
+      <tr><td>"Projektbefristung, danach schauen wir"</td><td>Normal. Devam sorusu: hangi proje, ne zaman biter</td></tr>
+      <tr><td>"Das machen wir immer so"</td><td>Dikkat. Bu bir deneme süresi uzatması gibi kullanılıyor olabilir, koşulları netleştir</td></tr>
+      <tr><td rowspan="2">Bu pozisyonun tetikleyicisi neydi?</td><td>"Der Kollege ist gegangen"</td><td>Sor: warum? Ve devir dokümanı var mı?</td></tr>
+      <tr><td>"Wir wachsen, es bleibt zu viel liegen"</td><td>İyi sinyal. Yığılmış iş listesi = senin ilk 90 günün</td></tr>
+      <tr><td rowspan="2">Betrieb vs. Neuentwicklung oranı</td><td>"90/10"</td><td>Bu ağırlıklı destek rolü. Geliştirme beklentini buna göre ayarla, hayal kırıklığını baştan önle</td></tr>
+      <tr><td>"Das kannst du selbst gestalten"</td><td>Özgürlük ama aynı zamanda yapı yok. Kim önceliklendiriyor diye sor</td></tr>
+      <tr><td rowspan="2">İzinde kim devralıyor?</td><td>"Ein Dienstleister" veya bir kollege</td><td>Sağlıklı</td></tr>
+      <tr><td>"Dann liegt es halt"</td><td>Tek kişilik IT. Dokümantasyon senin sigortan olur, kapanışta bunu vurgula</td></tr>
+      <tr><td>Ne zaman geri dönüş?</td><td>Net bir tarih</td><td>Ciddi süreç. Tarih vermezlerse kibarca zaman aralığı iste</td></tr>
+    </table></div>
+    <p class="behind"><b>Sıra önemli:</b> Befristung sorusunu gün ortasında, sohbet akarken sor. Kapanışın son sorusu olarak sorarsan, günün tonunu bitirir.</p>`);
+  p.appendChild(fcard);
+
+  // E: Abschluss-Pitch
+  const cardE=el(`<div class="card"><h3>E &middot; Abschluss-Pitch — 3 Minuten</h3>
+    <p><b>1. Was ich gesehen habe (2-3 Punkte, neutral)</b></p>
+    <textarea data-k="pitch1"></textarea>
+    <p><b>2. Was am meisten weh tut — mit Zahl</b><br><span class="behind">&raquo;Das passiert ca. ___ mal am Tag und kostet jeweils ca. ___ Minuten.&laquo;</span></p>
+    <textarea data-k="pitch2"></textarea>
+    <p><b>3. Quick Win (wenige Tage Aufwand)</b></p>
+    <textarea data-k="pitch3"></textarea>
+    <p><b>4. Mittelfristig — aber erst nach Messung</b></p>
+    <textarea data-k="pitch4"></textarea>
+    <p><b>5. Was ich heute NICHT beurteilen kann</b><br><span class="behind">&raquo;Dafür müsste ich mit ___ sprechen und mir ___ ansehen.&laquo;</span></p>
+    <textarea data-k="pitch5"></textarea>
+  </div>`);
+  p.appendChild(cardE);
+  attachReveal(cardE,"Doldurulmuş örnek pitch",`
+    <p>Örnek gözlemlerle kurulmuş tam bir kapanış. Kendi gözlemlerinle aynı iskelete oturt, uzunluk aynı kalsın.</p>
+    <blockquote>
+      <p><b>1.</b> Drei Dinge sind mir heute aufgefallen. Der Werkstattauftrag wird zuerst auf Papier notiert und später ins System übertragen. Kunden rufen an und fragen, ob ihr Rad fertig ist. Und beim Wareneingang wird erst abends gebucht, tagsüber steht der Bestand also nicht ganz richtig.</p>
+      <p><b>2.</b> Am meisten weh tut aus meiner Sicht die Rückfrage nach dem Reparaturstatus. Drei Kollegen haben das unabhängig voneinander genannt, es passiert acht bis zehn Mal am Tag, und jedes Mal wird jemand in der Werkstatt unterbrochen.</p>
+      <p><b>3.</b> Kurzfristig würde ich dort ansetzen: eine automatische Benachrichtigung, wenn der Auftrag auf fertig gesetzt wird. Das ist überschaubar, wenn das Werkstattmodul einen Status und eine Kundennummer führt, und es kostet keine neue Software.</p>
+      <p><b>4.</b> Mittelfristig fände ich die doppelte Erfassung des Auftrags interessanter, weil sie jeden Tag anfällt. Aber da würde ich erst messen, wie lange das wirklich dauert und wie viele Aufträge betroffen sind, bevor ich etwas verspreche.</p>
+      <p><b>5.</b> Was ich heute nicht beurteilen kann, ist die Schnittstelle zwischen euren Systemen beim Bestand. Dafür müsste ich mit dem Kollegen aus dem Lager sprechen und mir ansehen, wo der Bestand wirklich geführt wird.</p>
+    </blockquote>
+    <p><b>Neden bu işe yarıyor:</b></p>
+    <ul>
+      <li>2. maddede <b>sayı</b> var, üstelik tahmin değil, üç kişiden duyulmuş</li>
+      <li>3. maddede <b>koşul</b> var ("wenn das Modul einen Status führt") — söz vermiyorsun, ön koşul koyuyorsun</li>
+      <li>4. maddede ölçmeden söz vermiyorsun</li>
+      <li>5. madde haddini biliyor ve bir sonraki adımı adlandırıyor</li>
+      <li>Hiçbir yerde kimse eleştirilmiyor, hiçbir sistem "eski" denmiyor</li>
+    </ul>
+    <div class="trap"><b>Yapma:</b> Beş yerine on gözlem sayma. Bir günde on şey gören aday, hiçbirine bakmamış demektir.</div>`);
+
+  // F: eigene Bewertung
+  const krit=["Team / Atmosphäre","Nimmt sich jemand Zeit für mich?","Technische Ausstattung","Klarheit der Rolle","Will ich hier täglich hin?"];
+  let brows=krit.map((k,i)=>`<tr><td>${k}</td><td><input type="text" data-k="r${i}a" placeholder="1-5"></td><td><input type="text" data-k="r${i}b"></td></tr>`).join("");
+  const cardF=el(`<div class="card"><h3>F &middot; Meine eigene Bewertung (abends, für mich)</h3>
+    <div class="scroll"><table><tr><th>Kriterium</th><th style="width:70px">1-5</th><th>Notiz</th></tr>${brows}</table></div>
+    <p class="behind">Probearbeiten iki yönlüdür. En değerli soru: <i>&raquo;Wer macht diese Aufgaben heute — und wie?&laquo;</i> Cevap, rolün gerçekte ne kadar tanımlı olduğunu açık eder.</p>
+  </div>`);
+  p.appendChild(cardF);
+  attachReveal(cardF,"Neye dikkat edeceksin — sinyaller",`
+    <div class="grid2">
+      <div><p><b>İyi sinyaller</b></p><ul>
+        <li>Molada seni yanlarına alıyorlar</li>
+        <li>Biri sana zaman ayırıyor, sadece yanına oturtmuyor</li>
+        <li>Kendi sorunlarını açıkça anlatıyorlar ("das läuft bei uns noch nicht rund")</li>
+        <li>Bekleyen işlerin bir listesi var</li>
+        <li>Sorularına somut cevap veriyorlar</li>
+        <li>Kollegler birbirine normal davranıyor</li>
+      </ul></div>
+      <div><p><b>Kırmızı bayraklar</b></p><ul>
+        <li>Gün boyunca kimse seninle ilgilenmiyor, "schau dich mal um"</li>
+        <li>Rolün ne olduğunu kimse net söyleyemiyor</li>
+        <li>"Das machen wir alles nebenbei" — yani hiç yapılmıyor</li>
+        <li>Bugün bu işleri kimin yaptığı sorusuna kaçamak cevap</li>
+        <li>Ekipte gergin hava, kapalı kapı arkası konuşmalar</li>
+        <li>Sana gerçek üretim işi yaptırıp tek başına bırakıyorlar</li>
+        <li>Befristung koşullarına net cevap yok</li>
+      </ul></div>
+    </div>
+    <p><b>Akşam kendine soracağın tek soru:</b> Bugün gördüğüm işi, önümüzdeki bir yıl her sabah yapmak ister miyim? Cevap "belki" ise, sebebini bir cümleyle yaz. O cümle sözleşme görüşmesindeki sorularını belirler.</p>
+    <p class="behind">Förderzusage burada da işe yarar: eğer rol biraz belirsizse, "ilk iki yıl için destek var" argümanı süreyi ve karşılıklı riski konuşmayı kolaylaştırır.</p>`);
+
+  // persist inputs
+  p.querySelectorAll("input[type=text],textarea").forEach(inp=>{
+    const k=inp.dataset.k;
+    if(!k) return;
+    inp.value=store.get("f-"+k,"");
+    inp.addEventListener("input",()=>store.set("f-"+k,inp.value));
+  });
+
+  document.getElementById("printBtn").onclick=()=>{
+    document.body.classList.add("print-mode");
+    window.print();
+    setTimeout(()=>document.body.classList.remove("print-mode"),500);
+  };
+  document.getElementById("clearBtn").onclick=()=>{
+    if(!confirm("Feldbogen'deki tüm notlar silinsin mi?")) return;
+    p.querySelectorAll("input[type=text],textarea").forEach(inp=>{
+      inp.value=""; if(inp.dataset.k) store.set("f-"+inp.dataset.k,"");
+    });
+  };
+})();
+
+/* 6 — Spickzettel */
+(function(){
+  const p=document.getElementById("tab-spick");
+  p.appendChild(el(`<h2>Spickzettel</h2>`));
+  p.appendChild(el(`<p class="sub">Son gece bir kez oku, sabah metroda bir kez daha.</p>`));
+
+  p.appendChild(el(`<div class="card"><h3>Elin alışkın olsun — Windows araçları</h3>
+    <div class="scroll"><table><tr><th style="width:34%">Befehl</th><th>Ne için</th></tr>
+    ${SPICK.befehle.map(b=>`<tr><td><code>${b[0]}</code></td><td>${b[1]}</td></tr>`).join("")}
+    </table></div>
+    <p class="behind">Ayrıca tazele: AD kullanıcı/grup/OU, GPO'nun uygulanıp uygulanmadığını görme, DNS A-Record, DHCP rezervasyonu, Freigabe- vs NTFS-Rechte, Spooler yeniden başlatma, M365 lisans atama, 3-2-1 yedekleme.</p></div>`));
+
+  p.appendChild(el(`<div class="card"><h3>Dürüstlük tablosu — aşırı iddia etme</h3>
+    <div class="scroll"><table><tr><th style="width:34%">Konu</th><th>Söyleyeceğin</th></tr>
+    ${SPICK.ehrlich.map(e=>`<tr><td>${e[0]}</td><td>${e[1]}</td></tr>`).join("")}
+    </table></div>
+    <p class="behind">Çerçeve: iki yıl Umschulung (önce Systemintegration, sonra Anwendungsentwicklung), destek pratiği, kendi çalışan projeleri. İlanın başlığı zaten tam olarak bu bileşimi arıyor.</p></div>`));
+
+  p.appendChild(el(`<div class="grid2">
+    <div class="card"><h3>Asla</h3><ul>${SPICK.niemals.map(x=>`<li>${x}</li>`).join("")}</ul></div>
+    <div class="card"><h3>Her zaman</h3><ul>${SPICK.immer.map(x=>`<li>${x}</li>`).join("")}</ul></div>
+  </div>`));
+
+  p.appendChild(el(`<div class="card"><h3>Çantaya</h3><ul>${SPICK.mitnehmen.map(x=>`<li>${x}</li>`).join("")}</ul></div>`));
+
+  p.appendChild(el(`<div class="card"><h3>Günün üç kuralı</h3>
+    <ol>
+      <li><b>Çalışan hiçbir şeye onaysız dokunma.</b> Kasa, firewall, sunucu, kamera. Sormak iki saniye, satışın durması para.</li>
+      <li><b>Sesli düşün.</b> Ne bildiğini göremezler, sadece ne söylediğini ve yaptığını görürler.</li>
+      <li><b>Kullanıcı önce, teknik sonra.</b> Müşterisi başında bekleyen kollege önce ara çözüm alır.</li>
+    </ol>
+    <p><b>Ve gün boyu tek formül:</b> anla &rarr; ölç &rarr; önceliklendir &rarr; öner &rarr; nasıl ölçeceğini söyle.</p></div>`));
+
+  p.appendChild(el(`<div class="card"><h3>Hukuki çerçeve, kısa</h3>
+    <p>Probearbeiten bir <b>Einfühlungsverhältnis</b>tir: iş ilişkisi doğmaz, ücret zorunlu değil, kendi başına değerlendirilebilir bir iş edimi beklenmez.
+    Buna rağmen gesetzliche Unfallversicherung üzerinden sigortalısın.</p>
+    <p><b>Pratik karşılığı:</b> Yanında biri varken işi yap — ama canlı sistemde tek başına kalıcı değişiklik yapma. İkisinin arasındaki fark, günün tamamında senin duruşun.</p></div>`));
+})();
+</script>
+</body>
+</html>

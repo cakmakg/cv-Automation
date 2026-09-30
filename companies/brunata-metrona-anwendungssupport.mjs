@@ -4,6 +4,10 @@
 // Ansprechpartner: Marcel Hoffmann (HR Business Partner), 0221 995101543 -> Herr Hoffmann.
 // Bewerbung über Portal, INKL. GEHALTSWUNSCH -> 40.000 € (User-Entscheidung 22.07.2026).
 // Quelle: xing.com/jobs/155968213 (JSON-LD extrahiert, aktiv bis 31.08.2026).
+// NEU ERZEUGT 16.08.2026: Anzeige im Browser gegengeprüft, unverändert (Anforderungen, Herr Hoffmann,
+// Portal inkl. Gehaltswunsch). Paket vom 22.07. wurde nie versendet, PDFs nicht mehr in output/.
+// P1 auf die Regel vom 23.07. gezogen: rein faktisch, ohne „möchte zurück in die IT, weil…" und
+// ohne „passt genau zu dem, was ich kann" (feedback_anschreiben_p1_keine_begruendung).
 // BEREICH 2 (Goldmuster). Score 4.5/5: Anforderungen weich (kaufm. ODER techn. Ausbildung ->
 // FiSi übererfüllt; "erste Berufserfahrung kundenorientiert, idealerweise IT-Vorkenntnisse" ->
 // GIS + Café; MS-Office nur ANWENDERkenntnisse; KEIN Englisch); Aufgaben 1st/2nd-Level,
@@ -13,7 +17,7 @@
 
 export default {
   slug: 'brunata-metrona-anwendungssupport',
-  date: '22.07.2026',
+  date: '16.08.2026',
   language: 'de',
 
   recipient: [
@@ -34,7 +38,7 @@ export default {
     ],
   },
   company: {
-    mission: 'Kölner Unternehmen, das mit Messgeräten und Verbrauchsabrechnungen den bewussten Umgang mit Energie im Gebäudesektor möglich macht.',
+    mission: 'Unternehmen aus Köln, dessen Messgeräte und Verbrauchsabrechnungen den Energieverbrauch im Gebäudesektor überhaupt erst sichtbar machen.',
     verbindung: 'Damit Niederlassungen und Anwender zuverlässig arbeiten können, braucht es Support, der Störungen ruhig klärt und sauber dokumentiert; genau das ist meine Arbeitsweise.',
   },
   jobKeywords: ['Anwendersupport', 'Second Level', 'Ticket', 'Dokumentation', 'Windows', 'Remote', 'Software', 'Fachanwendungen'],
@@ -65,11 +69,11 @@ export default {
   anschreiben: {
     anrede: 'Sehr geehrter Herr Hoffmann,',
     paragraphs: [
-      `ich bewerbe mich auf Ihre Stelle im Support für Geräte und Anwendungen in Köln. Ich bin gelernter Fachinformatiker für Systemintegration und habe im First Level Support Anwender und Systeme betreut. Zurzeit arbeite ich in einem Reisebüro im Bereich Frontend und Marketing, möchte aber zurück in die IT, weil dort meine Ausbildung und meine Stärken liegen. Der Anwendersupport bei einem Kölner Unternehmen für Messgeräte und Verbrauchsabrechnungen passt genau zu dem, was ich kann und machen möchte.`,
+      `ich bewerbe mich auf Ihre Stelle im Support für Geräte und Anwendungen in Köln. Ich bin gelernter Fachinformatiker für Systemintegration und habe im First Level Support Anwender und Systeme betreut. Zurzeit arbeite ich in einem Reisebüro im Bereich Frontend und Marketing.`,
 
-      `Anwendern am Telefon schnell und freundlich zu helfen, ist genau mein Ding. Bei GIS in Bonn habe ich Störungen aufgenommen, im Ticketsystem sauber dokumentiert und entweder direkt gelöst oder qualifiziert an den Second Level weitergegeben. Mit Windows und den Microsoft Office Komponenten arbeite ich täglich. Für Ihre Anwender heißt das: Anfragen werden zügig und nachvollziehbar bearbeitet, im Regelbetrieb genauso wie bei einer Störung.`,
+      `Anwendern schnell und freundlich zu helfen, ist genau mein Ding. Bei GIS in Bonn habe ich Störungen am Telefon und remote aufgenommen, im Ticketsystem sauber dokumentiert und entweder direkt gelöst oder qualifiziert an den Second Level weitergegeben. Geräte einzurichten und wieder ans Laufen zu bringen gehört für mich dazu, von Windows Clients über Drucker und Peripherie bis zu mobilen Geräten. Ihre Anwender merken davon im besten Fall nur, dass ihre Anfrage zügig bearbeitet wird und die Technik weiterläuft.`,
 
-      `Was mich von vielen im First Level unterscheidet, ist meine Entwicklungsseite. Ich baue selbst Webanwendungen mit React und Node. Dadurch verstehe ich, wie Fachanwendungen aufgebaut sind. Beim Testen neuer Softwarestände sehe ich schnell, ob sich ein Verhalten geändert hat. Dokumentation halte ich so, dass Kolleginnen und Kollegen direkt damit weiterarbeiten können. In Ihre Fachanwendungen und Messgeräte arbeite ich mich zügig ein.`,
+      `Was mich im Anwendersupport von vielen unterscheidet, ist meine Entwicklungsseite. Ich baue selbst Webanwendungen mit React und Node. Dadurch verstehe ich, wie Fachanwendungen aufgebaut sind und wo sie im Alltag klemmen. Beim Testen neuer Softwarestände sehe ich schnell, ob sich ein Verhalten geändert hat. Meine Dokumentation schreibe ich so, dass die Kolleginnen und Kollegen in den Niederlassungen direkt damit weiterarbeiten können. In Ihre Fachanwendungen rund um Messgeräte und Verbrauchsabrechnungen arbeite ich mich zügig ein.`,
 
       `Bevor ich in die IT gewechselt bin, habe ich in Bonn ein eigenes Café mit Cateringservice geführt. Dort zählte jeden Tag, dass Kunden schnell und freundlich bekommen, was sie brauchen. Diesen Serviceanspruch bringe ich in Ihren Support mit. Ich wohne in Bonn, der Parkgürtel ist für mich gut erreichbar. Einsteigen kann ich ab sofort, mein Gehaltswunsch liegt bei 40.000 Euro brutto im Jahr.`,
 

@@ -58,6 +58,14 @@ Full-Stack Developer and AI Systems Builder with a focus on multi-agent orchestr
 
 ## Projects
 
+### GuestMatrix — Multi-Tenant B2B Guest-Content Platform
+- Multi-tenant SaaS on Supabase PostgreSQL with Row-Level-Security (database-level tenant isolation)
+- Sector-based config registry (tourism, real estate, events) — platform configured per customer/sector
+- GDPR-compliant: consent timestamps, soft deletion, presigned private-bucket URLs
+- Server-side magic-byte MIME validation, Zod schemas, Vitest test suite
+- Next.js 15 (App Router) + TypeScript (strict), deployed on Vercel, Upstash Redis rate limiting
+- Status: lauffähig und getestet (in active development), repo: github.com/cakmakg/GuestMatrix
+
 ### AI Orchestra — Multi-Agent B2B Automation System
 - LangGraph-based multi-agent orchestration system for B2B process automation
 - MongoDB Vector Search as the semantic retrieval layer (RAG architecture)
@@ -122,11 +130,11 @@ Istanbul | 2009 – 2012
 - **Cloud & ML:** AWS Bedrock, AWS SageMaker (RCF Anomaly Scoring), AWS WAF, fal.ai (Nano Banana 2, Veo 3, Kling v3)
 - **Automation:** n8n Workflow Automation, Webhook Design, API Orchestration, Pipeline Design
 - **Backend:** Node.js, Express.js, Next.js, FastAPI (Python 3.11+), TypeScript, Event-Driven Architecture, Stripe API
-- **Frontend:** React.js, Next.js 14, TypeScript, Redux, Zustand, React Flow, TailwindCSS, SASS, Material-UI
-- **Databases:** MongoDB, MongoDB Vector Search, ChromaDB (Vector RAG), SQL, Firebase
+- **Frontend:** React.js, Next.js 14/15, TypeScript, Redux, Zustand, React Flow, TailwindCSS, SASS, Material-UI
+- **Databases:** MongoDB, MongoDB Vector Search, ChromaDB (Vector RAG), PostgreSQL, Supabase (PostgreSQL, Row-Level-Security), SQL, Firebase
 - **API Integrations:** Amadeus, Hotelbeds, Stripe, Twilio, VirusTotal, AbuseIPDB, Shodan, Modash
 - **Security & Compliance:** AES-256-GCM encryption, GDPR PII masking, Multi-tenant RBAC, Audit logging
-- **DevOps & Tools:** Docker, CI/CD, Linux, Git/GitHub, Playwright, npm/pnpm
+- **DevOps & Tools:** Docker, CI/CD, Vercel, Upstash Redis, Linux, Git/GitHub, Playwright, npm/pnpm
 - **Methodology:** Agile/Scrum, Jira, Stakeholder communication, Business-IT translation
 
 ---

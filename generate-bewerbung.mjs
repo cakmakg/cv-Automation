@@ -9,25 +9,28 @@
  *   - bewerbungspaket-{slug}-{date}.pdf  (CV + Anschreiben merged)
  *
  * Usage:
- *   node generate-bewerbung.mjs companies/skr-reisen.mjs
+ *   node generate-bewerbung.mjs companies/skr-reisen.mjs --check   # Validierung + Höhe beider Seiten, kein PDF
+ *   node generate-bewerbung.mjs companies/skr-reisen.mjs           # PDFs erzeugen
  */
 
 import { readFileSync, writeFileSync, existsSync, rmSync } from 'fs';
-import { resolve, dirname, join } from 'path';
+import { resolve, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { spawnSync } from 'child_process';
 import { PDFDocument } from 'pdf-lib';
 import { validateAnschreiben } from './validate-anschreiben.mjs';
 import { validateCV } from './validate-cv.mjs';
+import { resolveConfig } from './profiles.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CAREER_OPS = __dirname;
 
 // --- args ---
-const configArg = process.argv[2];
+const CHECK = process.argv.includes('--check');
+const configArg = process.argv.slice(2).find((a) => !a.startsWith('--'));
 if (!configArg) {
-  console.error('Usage: node generate-bewerbung.mjs <config-file.mjs>');
-  console.error('Example: node generate-bewerbung.mjs companies/skr-reisen.mjs');
+  console.error('Usage: node generate-bewerbung.mjs <config-file.mjs> [--check]');
+  console.error('Example: node generate-bewerbung.mjs companies/skr-reisen.mjs --check');
   process.exit(1);
 }
 
@@ -38,7 +41,7 @@ if (!existsSync(configPath)) {
 }
 
 // --- load config ---
-const config = (await import(pathToFileURL(configPath).href)).default;
+const config = resolveConfig((await import(pathToFileURL(configPath).href)).default);
 const { slug, date, recipient, subject, cv, anschreiben, language = 'de', signatureWidth = '150px' } = config;
 const cvTemplateFile = { en: 'templates/cv-base-en.html', tr: 'templates/cv-base-tr.html' }[language] || 'templates/cv-base.html';
 const asTemplateFile = { en: 'templates/anschreiben-base-en.html', tr: 'templates/anschreiben-base-tr.html' }[language] || 'templates/anschreiben-base.html';
@@ -49,10 +52,14 @@ const isoDate = (() => {
   return m ? `${m[3]}-${m[2]}-${m[1]}` : date;
 })();
 
-console.log(`\n📦 Generating Bewerbungspaket: ${slug} (${date})`);
+console.log(`\n📦 ${CHECK ? 'Checking' : 'Generating'} Bewerbungspaket: ${slug} (${date})`);
+if (config._profile) console.log(`  Profil: ${config._profile.label}`);
 
 // --- pre-flight: validate CV content rules ---
-const { errors: cvErrors, warnings: cvWarnings } = await validateCV(config);
+const { errors: cvErrors, warnings: cvWarnings, suppressed: cvSuppressed } = await validateCV(config);
+if (cvSuppressed.length > 0) {
+  console.log(`  ○ ${cvSuppressed.length} für das Profil gewollte CV-Meldung(en) ausgeblendet`);
+}
 if (cvErrors.length > 0) {
   console.warn('\n⚠️  CV validation ERRORS (fix before sending):');
   cvErrors.forEach((e) => console.warn(`  ✗ ${e}`));
@@ -83,6 +90,23 @@ if (asErrors.length === 0 && asWarnings.length === 0) {
   console.warn('  (continuing PDF generation — review warnings before sending)\n');
 };
 
+// --- Begleitmail (optional, config.mail) ---
+// Kopf, Grußformel und Signatur waren bei jeder Mail gleich und wurden von Hand getippt.
+// Kontaktdaten kommen aus cv.md (Source of Truth), nicht noch einmal hartkodiert.
+const mailWarnings = [];
+if (config.mail) {
+  const paras = config.mail.paragraphs ?? [];
+  if (paras.length === 0) mailWarnings.push('mail.paragraphs ist leer');
+  if (paras.some((p) => p.includes('Mit freundlichen Grüßen'))) {
+    mailWarnings.push('"Mit freundlichen Grüßen" steht in mail.paragraphs — Grußformel und Signatur setzt der Generator');
+  }
+  const open = paras.join(' ').match(/\[[^\]]*\]/g);
+  if (open) mailWarnings.push(`Platzhalter vor dem Versand ausfüllen: ${open.join(', ')}`);
+  if (!config.mail.to) mailWarnings.push('mail.to fehlt — Kopf zeigt "Versand über Portal/Formular"');
+  mailWarnings.forEach((w) => console.warn(`  ⚠️  Mail: ${w}`));
+  if (mailWarnings.length === 0) console.log('  ✓ Begleitmail: Angaben vollständig');
+}
+
 // --- load photo as base64 ---
 const photoPath = resolve(CAREER_OPS, 'data/1000090042.JPG');
 if (!existsSync(photoPath)) {
@@ -109,12 +133,20 @@ const profilBody = cv.profil
       ? `<div class="profil"><strong>Schwerpunkte:</strong> ${cv.competencies.join(' · ')}</div>`
       : '');
 
-const profilSection = profilBody
-  ? `<div class="section avoid-break">
+// Kurzes Profil (Bereich-1-Struktur des Users, 28.08.2026: "Profil: Full Stack Web Developer")
+// rendert als EINE kompakte Zeile mit Inline-Label. Eine eigene Sektion mit Überschrift kostet
+// für drei Wörter zwei zusätzliche Zeilen und reißt die 1-Seiten-Regel.
+const profilIsOneLiner = cv.profil && cv.profil.length <= 60 && !/[.!?]/.test(cv.profil);
+const profilSection = !profilBody
+  ? ''
+  : profilIsOneLiner
+    ? `<div class="section avoid-break" style="margin-bottom:10px;">
+    <div class="profil"><strong>Profil:</strong> ${cv.profil}</div>
+  </div>`
+    : `<div class="section avoid-break">
     <div class="section-title">Profil</div>
     ${profilBody}
-  </div>`
-  : '';
+  </div>`;
 
 const projectsHtml = (cv.projects || [])
   .map(
@@ -143,15 +175,23 @@ const skillsHtml = cv.skills
 //      in einem Reisebüro", der CV muss das zeigen (Konsistenz-Lücke bis 22.07. behoben).
 //   2. Jede Bullet-Beschreibung ist EINZEILIG im PDF (kurz und klar, kein Umbruch) —
 //      wird nach der PDF-Erzeugung per pdftotext hart geprüft (checkAtsExtraction).
+// STAND 28.08.2026 (User-Korrektur): Reisegesucht.com ist BEENDET (03/2026 – 07/2026), nicht mehr
+// "heute" — in Anschreiben also nicht mehr als aktuelle Stelle formulieren. UNO-Flüchtlingshilfe ist
+// als sechste Station dazugekommen; Datum und Bullet stammen aus cv.md (05/2023 – 06/2023), NICHT aus
+// der Schnellfassung des Users, in der UNO versehentlich EMLAKs Zeitraum und Bullet trug.
 const defaultExperience = [
-  { company: 'Reisegesucht.com — Köln', period: '03/2026 – heute', role: 'Frontend &amp; Marketing',
+  { company: 'Reisegesucht.com — Köln', period: '03/2026 – 07/2026', role: 'Frontend &amp; Marketing',
     bullets: ['Frontend-Design und Marketing für ein Reisebüro: Webseiten, Content, Kampagnen'] },
   { company: 'GIS GmbH — Bonn', period: '11/2025 – 02/2026', role: '1st Level IT Support (Praktikum)',
     bullets: ['1st Level IT Support, Personalplanung und Zeiterfassung im Enterprise-Umfeld'] },
   { company: 'Vidinli Software — Bonn', period: '09/2025 – 10/2025', role: 'Frontend Developer (Praktikum)',
     bullets: ['Entwicklung des Frontends einer Shopping-Plattform mit <strong>React.js</strong> und <strong>TypeScript</strong>'] },
+  // Ohne Bullet — so in der Fassung des Users vom 28.08.2026; die Rollenzeile trägt die Aussage,
+  // und die eingesparte Zeile hält den CV zusammen mit UNO auf einer Seite.
   { company: 'EMLAK AG — Köln', period: '11/2023 – 05/2024', role: 'IT-Praktikum (im Rahmen der Umschulung)',
-    bullets: ['Unterstützung in IT-Systemen und Netzwerken — erste Praxis in IT-Infrastruktur'] },
+    bullets: [] },
+  { company: 'UNO-Flüchtlingshilfe — Bonn', period: '05/2023 – 06/2023', role: 'IT-Praktikum (im Rahmen der Umschulung)',
+    bullets: ['Unterstützung digitaler Abläufe und Datenpflege im Verwaltungsumfeld'] },
   { company: 'Mobile Coffee Bar &amp; Catering — Bonn', period: '2020 – 2023', role: 'Gründer &amp; Geschäftsführer (Selbstständiger Unternehmer)',
     bullets: ['Gründung und Leitung eines Catering-Unternehmens: Kunden, Finanzen, Logistik, Team'] },
 ];
@@ -212,7 +252,7 @@ const experienceHtml = (cv.experience || defaultExperience)
   .map((j) => `<div class="entry">
       <div class="entry-head"><span class="entry-date">${j.period}</span> <span class="entry-sep">·</span> <span class="entry-title">${j.company}</span></div>
       <div class="entry-sub">${j.role}</div>
-      <ul>${j.bullets.map((b) => `<li>${b}</li>`).join('')}</ul>
+      ${(j.bullets ?? []).length ? `<ul>${j.bullets.map((b) => `<li>${b}</li>`).join('')}</ul>` : ''}
     </div>`)
   .join('\n\n    ');
 
@@ -235,10 +275,6 @@ const cvHtml = cvTemplate
 
 // Fix font paths from ../fonts/ to absolute (generate-pdf.mjs rewrites ./fonts/, not ../fonts/)
 const cvHtmlFixed = cvHtml.replace(/url\(['"]?\.\.\/fonts\//g, "url('./fonts/");
-
-const cvHtmlPath = resolve(CAREER_OPS, `output/cv-${slug}.html`);
-writeFileSync(cvHtmlPath, cvHtmlFixed);
-console.log(`  ✓ CV HTML rendered: output/cv-${slug}.html`);
 
 // --- render Anschreiben HTML ---
 const asTemplate = readFileSync(resolve(CAREER_OPS, asTemplateFile), 'utf-8');
@@ -265,9 +301,64 @@ const asHtml = asTemplate
 
 const asHtmlFixed = asHtml.replace(/url\(['"]?\.\.\/fonts\//g, "url('./fonts/");
 
+/**
+ * Druckt beide Seiten im Speicher mit denselben Einstellungen wie generate-pdf.mjs (A4,
+ * 0.6in Rand, gleiche Schriften) und zählt die Seiten. Die Seitenzahl entscheidet; die
+ * Renderhöhe sagt nur, wie viel ungefähr zu kürzen ist (sie weicht vom Druck um wenige px ab).
+ * Ersetzt die frühere Schleife KEEP_HTML → generate → measure-cv-height → kürzen → generate.
+ */
+async function measurePages(docs) {
+  const { chromium } = await import('playwright');
+  const fontsDir = resolve(CAREER_OPS, 'fonts');
+  const usable = Math.floor(((297 - 2 * 15.24) / 25.4) * 96);
+  const browser = await chromium.launch({ headless: true });
+  try {
+    // Niedriges Viewport, sonst meldet scrollHeight mindestens die Viewporthöhe.
+    const page = await browser.newPage({ viewport: { width: 679, height: 100 } });
+    const results = [];
+    for (const { label, html } of docs) {
+      const withFonts = html
+        .replace(/url\(['"]?\.\/fonts\//g, `url('file://${fontsDir}/`)
+        .replace(/file:\/\/([^'")]+)\.(woff2?|ttf|otf)['"]?\)/g, `file://$1.$2')`);
+      await page.setContent(withFonts, { waitUntil: 'load' });
+      await page.evaluate(() => document.fonts.ready);
+      const height = await page.evaluate(() => document.documentElement.scrollHeight);
+      const pdf = await page.pdf({
+        format: 'a4', printBackground: true, preferCSSPageSize: false,
+        margin: { top: '0.6in', right: '0.6in', bottom: '0.6in', left: '0.6in' },
+      });
+      const pages = (await PDFDocument.load(pdf)).getPageCount();
+      results.push({ label, height, pages });
+    }
+    return { usable, results };
+  } finally {
+    await browser.close();
+  }
+}
+
+if (CHECK) {
+  const { usable, results } = await measurePages([
+    { label: 'CV', html: cvHtmlFixed },
+    { label: 'Anschreiben', html: asHtmlFixed },
+  ]);
+  console.log('');
+  results.forEach(({ label, height, pages }) => {
+    const hint = `Höhe ~${height}px von ${usable}px`;
+    console.log(pages === 1
+      ? `  ✓ ${label}: 1 Seite (${hint}, Reserve ~${Math.max(0, usable - height)}px)`
+      : `  ✗ ${label}: ${pages} Seiten (${hint}) — ~${Math.max(1, Math.ceil((height - usable) / 17))} Zeilen kürzen`);
+  });
+  const ready = cvErrors.length === 0 && asErrors.length === 0 && results.every((r) => r.pages === 1);
+  console.log(ready
+    ? '\n✅ Check bestanden — jetzt ohne --check generieren.\n'
+    : '\n❌ Check nicht bestanden — erst Fehler/Überlauf beheben, dann generieren.\n');
+  process.exit(ready ? 0 : 1);
+}
+
+const cvHtmlPath = resolve(CAREER_OPS, `output/cv-${slug}.html`);
+writeFileSync(cvHtmlPath, cvHtmlFixed);
 const asHtmlPath = resolve(CAREER_OPS, `output/anschreiben-${slug}.html`);
 writeFileSync(asHtmlPath, asHtmlFixed);
-console.log(`  ✓ Anschreiben HTML rendered: output/anschreiben-${slug}.html`);
 
 // --- generate PDFs ---
 function runPdf(htmlPath, pdfPath) {
@@ -386,6 +477,14 @@ checkAtsExtraction(cvPdfPath, {
 runPdf(asHtmlPath, asPdfPath);
 console.log(`  ✓ Anschreiben PDF: output/anschreiben-${slug}-${isoDate}.pdf`);
 
+// Auch der Brief muss auf 1 Seite passen — bis 29.09.2026 wurde nur der CV gezählt.
+const asPageCount = (await PDFDocument.load(readFileSync(asPdfPath))).getPageCount();
+if (asPageCount > 1) {
+  console.warn(`  ⚠️  Anschreiben is ${asPageCount} pages — MUST be 1 page. Mit --check die Überlänge messen und oben kürzen.`);
+} else {
+  console.log(`  ✓ Anschreiben page count: 1 page`);
+}
+
 // --- merge into Bewerbungspaket (CV first, then Anschreiben) ---
 const merged = await PDFDocument.create();
 for (const inPath of [cvPdfPath, asPdfPath]) {
@@ -396,6 +495,37 @@ for (const inPath of [cvPdfPath, asPdfPath]) {
 const out = await merged.save();
 writeFileSync(paketPdfPath, out);
 console.log(`  ✓ Bewerbungspaket: output/bewerbungspaket-${slug}-${isoDate}.pdf (${(out.length / 1024).toFixed(0)} KB, ${merged.getPageCount()} pages)`);
+
+if (config.mail) {
+  const cvMd = readFileSync(resolve(CAREER_OPS, 'cv.md'), 'utf-8');
+  const cvField = (k) => cvMd.match(new RegExp(`^\\*\\*${k}:\\*\\* (.+)$`, 'm'))?.[1]?.trim() ?? '';
+  const name = cvMd.match(/^# CV — (.+)$/m)?.[1]?.trim() ?? '';
+  const ort = cvField('Location').replace(/,\s*(Germany|Deutschland)$/i, '');
+  const paketName = `bewerbungspaket-${slug}-${isoDate}.pdf`;
+  const mailText = [
+    ...(config.mail.hinweis ? [config.mail.hinweis.trim(), ''] : []),
+    config.mail.to ? `An:      ${config.mail.to}` : 'An:      (Versand über Portal/Formular)',
+    `Betreff: ${config.mail.subject ?? subject}`,
+    `Anhang:  ${paketName}`,
+    '',
+    '---',
+    '',
+    config.mail.anrede ?? anredeText,
+    '',
+    ...(config.mail.paragraphs ?? []).flatMap((p) => [p, '']),
+    'Mit freundlichen Grüßen',
+    name,
+    '',
+    '--',
+    name,
+    ort,
+    cvField('Phone'),
+    cvField('Email'),
+    '',
+  ].join('\n');
+  writeFileSync(resolve(CAREER_OPS, `output/mail-${slug}-${isoDate}.txt`), mailText);
+  console.log(`  ✓ Begleitmail: output/mail-${slug}-${isoDate}.txt${mailWarnings.length ? ' (⚠️ Hinweise oben beachten)' : ''}`);
+}
 
 // --- cleanup: remove intermediate HTML render files, keep only the 3 PDFs ---
 for (const tmp of [cvHtmlPath, asHtmlPath]) {

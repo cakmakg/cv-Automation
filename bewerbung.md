@@ -227,6 +227,58 @@ NICHT beantworten: „innovatives Unternehmen", „spannende Projekte", „dynam
 
 ---
 
+## ⭐ GOLDMUSTER FULLSTACK / WEB DEVELOPER — freigegeben 17.08.2026 (grinnberg)
+
+> **Für Fullstack-, Web-Developer- und Software-Engineer-Rollen ist DIESER Brief die Vorlage.**
+> Nicht die Blocktexte weiter unten und nicht die Absätze aus der Stimm-Referenz darüber.
+> Der Text stammt inhaltlich vom User selbst, wurde nur von Regelverstößen bereinigt und
+> danach freigegeben. Er ist nach dem Recruiter-Feedback entstanden und validator-sauber:
+> 0 AI-Tells, 0 Dreier-Aufzählungen, 0 Bindestrich-Wörter im Fließtext, ATS 10/10.
+> Entscheidend ist die **Logik der fünf Absätze**, nicht der Wortlaut.
+
+### Die Logik — fünf Absätze mit fester Funktion
+
+| # | Funktion | Was hineingehört | Was NICHT hineingehört |
+|---|---|---|---|
+| P1 | **Wer ich bin, rein faktisch** | Bewerbung auf die Stelle, was ich baue (Webanwendungen Frontend + Backend), der Stack in einem Satz, ein Arbeitsweise-Signal (Tests und Doku von Anfang an), aktueller Job im Reisebüro | Kein „ich möchte", kein „reizt mich", keine Begründung, warum ich wechseln will |
+| P2 | **Abgleich mit den Muss-Anforderungen** | Die geforderte Technologie, die ich nicht habe, als offene Einarbeitung; danach das, was ich habe: REST, relationale Datenbanken, Git, Docker, CI/CD, agile Abläufe | Keine Gap-Negation („das bringe ich nicht mit"), keine Entschuldigung |
+| P3 | **Substanzabsatz — meine gebauten Systeme** | GuestMatrix fachlich erklärt (was es für wen tut), dann die Agentensysteme namentlich, dann die Technik (LangGraph, MongoDB Vector Search, n8n), dann Qualitätssicherung über menschliche Freigabepunkte, dann ein Ergebnis-Satz, dann das laufende Projekt | Kein „produktiv im Kundenbetrieb", keine erfundenen Zahlen |
+| P4 | **Fundament und Arbeitsweise** | Zwei Jahre Umschulung zum Fachinformatiker, Herkunft aus Tourismus und eigenem Café als Prägung der Arbeitsweise, Standortaussage | Keine Praktika einzeln (die stehen im CV), kein Quereinsteiger-Label |
+| P5 | **Abschluss** | Genau ein Satz: Über die Einladung zu einem persönlichen Gespräch freue ich mich. | Keine Grußformel, kein Name — das setzt das Template selbst |
+
+### Freigegebener Volltext (grinnberg GmbH, Fullstack-Entwickler, Darmstadt)
+
+> Sehr geehrte Damen und Herren,
+>
+> über grinnberg bewerbe ich mich auf die Stelle als Fullstack Entwickler in Darmstadt. Ich baue Webanwendungen im Frontend und im Backend. Mein Stack ist React.js und Next.js mit TypeScript, im Backend Node.js. Tests und Dokumentation schreibe ich von Anfang an mit. Zurzeit bin ich im Frontend und Marketing eines Reisebüros in Köln tätig.
+>
+> Angular kenne ich noch nicht im Detail und arbeite mich zügig ein. Im Backend baue ich REST Schnittstellen und arbeite mit relationalen Datenbanken, vor allem PostgreSQL. Git, Docker und Pipelines für CI/CD gehören für mich zum Alltag. Mit agilen Abläufen arbeite ich in meinen Projekten.
+>
+> GuestMatrix ist eine mandantenfähige Plattform für Tourismus und Hospitality auf Basis von Next.js und PostgreSQL. Unternehmen sammeln dort über QR Codes Fotos und Videos ihrer Gäste, dazu Bewertungen und Feedback. Daneben baue ich Systeme aus mehreren Agenten für Prozesse im B2B. Dazu gehören AI Orchestra, eine autonome Travel Agency und GuestMatrix Automation. Ich nutze dafür LangGraph und MongoDB Vector Search, dazu n8n als digitales Nervensystem für ereignisgesteuerte Workflows. Die Qualität sichere ich über feste Freigabepunkte, an denen ein Mensch entscheidet, bevor das System weiterläuft. Dadurch bleibt jeder Schritt nachvollziehbar. Parallel baue ich gerade ein KI System, das Logs aus der Cyber Security auswertet.
+>
+> Mein Fundament sind zwei Jahre Umschulung zum Fachinformatiker, zuerst Systemintegration in Köln, danach Anwendungsentwicklung mit Schwerpunkt Webentwicklung im Fullstack. Bevor ich in die IT gewechselt bin, war ich im Tourismus tätig und habe ein eigenes Café mit Catering geführt. Das prägt meine Arbeitsweise bis heute: ich denke vom Kunden her und bleibe auch in stressigen Situationen ruhig. Software soll im Alltag wirklich helfen, daran messe ich meine Arbeit. Flexible Arbeitszeiten und mobiles Arbeiten passen gut zu mir, und ich bin bereit, mich an den Standort Darmstadt zu binden.
+>
+> Über die Einladung zu einem persönlichen Gespräch freue ich mich.
+
+### Was pro Stelle VARIIERT
+
+- **P1 Satz 1:** Firmenname und exakte Stellenbezeichnung.
+- **P2 Satz 1:** die eine geforderte Technologie, die fehlt (hier Angular). Wenn nichts fehlt, entfällt der Satz und P2 startet direkt mit dem Backend-Satz.
+- **P2 Rest:** nur die Begriffe nennen, die in der Anzeige wirklich stehen. Keine Keyword-Halde.
+- **P3:** Projektauswahl nach Domäne. Reise/Hospitality → GuestMatrix zuerst. Security/reguliert → SecOps zuerst. Reines Fullstack ohne KI-Bezug → GuestMatrix ausführlich, Agentensysteme auf zwei Sätze kürzen.
+- **P4 letzter Satz:** Standortaussage. Nur schreiben, was der User selbst gesagt hat, nie eine Umzugsbereitschaft erfinden.
+
+### Was FIX bleibt
+
+- Fünf Absätze, P5 ist der Abschlusssatz allein.
+- P1 rein faktisch mit aktuellem Job am Ende.
+- Herkunft Tourismus und eigenes Café gehört in P4, nicht in P1.
+- Mindestens ein Ergebnis-Satz in P3 (hier: „Dadurch bleibt jeder Schritt nachvollziehbar.").
+- Kein Bindestrich im Fließtext, keine Dreier-Aufzählung, keine Grußformel im Text.
+- Immer erst validieren, dann generieren: node validate-anschreiben.mjs companies/DATEI.mjs
+
+---
+
 ## Aufbau (Absätze)
 
 Jedes Anschreiben folgt diesem Schema. Jeder Absatz hat eine klare Funktion:
@@ -249,6 +301,8 @@ eigenen Narrativ verknüpft, statt nur Stellenprofil und Lebenslauf abzugleichen
 ## Block 1 — Einleitung (rollenspezifisch)
 
 ### Fullstack Web Developer
+
+> ⚠️ VERALTET für Fullstack-Bewerbungen. Ab 17.08.2026 gilt das GOLDMUSTER FULLSTACK / WEB DEVELOPER weiter oben. Dieser Blocktext liefert nur noch Stichworte, nie Formulierungen.
 
 Als Fullstack Developer beschäftige ich mich intensiv mit der Entwicklung moderner Webanwendungen und skalierbarer Softwaresysteme. Dabei arbeite ich sowohl im Frontend als auch im Backend und lege großen Wert auf stabile, wartbare und technisch saubere Lösungen. Daher bewerbe ich mich auf die ausgeschriebene Position als [POSITION].
 
@@ -273,6 +327,8 @@ Systeme mit mehreren Agenten und autonome Workflows bilden den Kern meiner aktue
 ## Block 2 — Technische Kompetenz (rollenspezifisch)
 
 ### Fullstack Web Developer
+
+> ⚠️ VERALTET für Fullstack-Bewerbungen. Ab 17.08.2026 gilt das GOLDMUSTER FULLSTACK / WEB DEVELOPER weiter oben. Dieser Blocktext liefert nur noch Stichworte, nie Formulierungen.
 
 In meinen Projekten entwickle ich komplexe Weboberflächen mit modernen Technologien wie TypeScript, React, Next.js und Node.js, ergänzt um Systeme auf Basis von APIs und um Automatisierungsprozesse. Besonders interessieren mich Anwendungen, bei denen technische Prozesse transparent visualisiert, überwacht und gesteuert werden können. Themen wie State Management, die Integration von APIs, Fehlerhandling, Logging sowie die strukturierte Verarbeitung großer Datenmengen gehören zu meinem Arbeitsalltag.
 
